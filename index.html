@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1f2933" />
+    <meta name="theme-color" content="#15181c" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="src/style.css" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
@@ -18,8 +18,10 @@
           <button type="button" data-view="exercises">Exercices</button>
           <button type="button" data-view="library">Partitions</button>
         </nav>
+        <p id="midi-status" class="status"></p>
+        <button type="button" id="settings-btn" class="ghost" aria-expanded="false" aria-controls="settings">⚙ Réglages</button>
       </div>
-      <div class="controls">
+      <div id="settings" class="controls settings" hidden>
         <label>
           Noms des notes
           <select id="labels">
@@ -37,10 +39,16 @@
             <option value="5">61 touches (NP15)</option>
           </select>
         </label>
+        <label>
+          Thème
+          <select id="theme">
+            <option value="dark">Sombre</option>
+            <option value="light">Clair</option>
+          </select>
+        </label>
         <label class="check"><input type="checkbox" id="sound" /> Son</label>
         <button id="midi-btn" type="button">Connecter le MIDI</button>
       </div>
-      <p id="midi-status" class="status"></p>
     </header>
     <main>
       <section id="view-keyboard" class="view">
@@ -133,10 +141,10 @@
                 <option value="1">100 %</option>
               </select>
             </label>
-            <label class="check"><input type="checkbox" id="pr-keys" /> Montrer les touches</label>
+            <label class="check"><input type="checkbox" id="pr-keys" /> Montrer la prochaine touche</label>
             <button type="button" id="pr-start" class="primary">Commencer</button>
+            <p id="pr-feedback" class="feedback inline" aria-live="polite"></p>
           </div>
-          <p id="pr-feedback" class="feedback" aria-live="polite"></p>
           <div id="score" class="score-box"></div>
         </div>
         <p id="lib-status" class="status" aria-live="polite"></p>

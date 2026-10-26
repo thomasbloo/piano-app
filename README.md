@@ -14,14 +14,15 @@ Webapp installable (PWA) pour apprendre à lire les partitions et à jouer du pi
   - **note par note** : la partition attend que vous jouiez les bonnes notes sous le curseur ;
   - **temps réel** : après une mesure de décompte, le curseur avance au tempo (50, 75 ou 100 %) et chaque note est jugée juste, manquée ou fausse.
 
-  L'app joue l'autre main pour vous, peut surligner les touches à jouer, et donne un bilan à la fin.
+  L'app joue l'autre main pour vous, peut colorer la prochaine touche à jouer (activable pendant le morceau), et donne un bilan à la fin.
+- Thème sombre par défaut (thème clair dans ⚙ Réglages). L'écran tient sans défilement : la partition défile dans sa zone et le clavier reste toujours visible en bas.
 - Installable sur l'écran d'accueil d'Android et utilisable hors ligne une fois ouverte.
 
 ## Utiliser l'app sur une tablette Android
 
 1. L'app est publiée automatiquement sur GitHub Pages à chaque modification de `main`, à l'adresse `https://thomasbloo.github.io/piano-app/`. Réglage à faire une seule fois : dans le dépôt, Settings → Pages → Source : « GitHub Actions ». GitHub Pages demande un dépôt public ou un compte GitHub payant.
 2. Ouvrez l'adresse dans Chrome sur la tablette, puis menu ⋮ → « Installer l'application ».
-3. Pour jouer sur le Yamaha NP15 : reliez son port USB TO HOST à la tablette avec un câble USB-B vers USB-C (ou un adaptateur OTG), puis touchez « Connecter le MIDI ».
+3. Pour jouer sur le Yamaha NP15 : reliez son port USB TO HOST à la tablette avec un câble USB-B vers USB-C (ou un adaptateur OTG), puis touchez ⚙ Réglages → « Connecter le MIDI ». Ensuite, l'app se reconnecte toute seule à chaque ouverture.
 
 ## Lancer en local
 

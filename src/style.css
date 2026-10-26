@@ -1,60 +1,109 @@
+/* Dark by default; the light theme is a setting. */
 :root {
+  --bg: #15181c;
+  --surface: #1e2227;
+  --fg: #e3e1dd;
+  --muted: #98a3ae;
+  --border: #3a4048;
+  --accent: #6c9cf0;
+  --correct: #3fae6c;
+  --wrong: #e05a5a;
+  --white-key: #d9dbde;
+  --white-key-fg: #2a2e33;
+  --black-key: #0b0c0e;
+  --key-border: #555b63;
+  --score-bg: #1e2227;
+  /* Scores are drawn black on white by OSMD: invert them in the dark theme. */
+  --score-filter: invert(0.88) hue-rotate(180deg);
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
   --bg: #f5f3ef;
+  --surface: #ffffff;
   --fg: #1f2933;
   --muted: #5f6b76;
+  --border: #c9ccd1;
   --accent: #2f6fde;
   --correct: #2e9d5b;
   --wrong: #d64545;
   --white-key: #ffffff;
+  --white-key-fg: #333333;
   --black-key: #1b1b1f;
-  color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #15181c;
-    --fg: #e8e6e3;
-    --muted: #9aa5b1;
-    --accent: #6c9cf0;
-  }
+  --key-border: #888888;
+  --score-bg: #ffffff;
+  --score-filter: none;
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; }
 
+/* The app fills the screen exactly: the header and keyboard keep their size and the
+   middle area scrolls on its own, so the page itself never scrolls. */
+html, body { height: 100%; }
 body {
   margin: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   font-family: system-ui, sans-serif;
   background: var(--bg);
   color: var(--fg);
 }
 
-.topbar { padding: 12px 16px; }
-.topbar h1 { margin: 0 0 8px; font-size: 1.4rem; }
-.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.controls label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
-.controls label.check { flex-direction: row; align-items: center; }
-.controls select, .controls button { font: inherit; padding: 6px 10px; }
-.status { margin: 8px 0 0; font-size: 0.85rem; color: var(--muted); min-height: 1em; }
+button, select { font: inherit; color: inherit; }
+select, .controls button, button.ghost, .lib-actions button, .ex-footer button, label.button {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+}
 
-main { padding: 0 16px 16px; }
+.topbar { flex: none; padding: 8px 16px; }
+.title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.title-row h1 { margin: 0; font-size: 1.3rem; }
+.title-row .status { margin: 0 0 0 auto; }
+.tabs { display: flex; gap: 4px; }
+.tabs button {
+  padding: 5px 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.tabs button[aria-current='true'] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.settings { margin-top: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.settings[hidden] { display: none; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; }
+.controls label { display: flex; flex-direction: column; gap: 3px; font-size: 0.8rem; color: var(--muted); }
+.controls label.check { flex-direction: row; align-items: center; padding-bottom: 6px; }
+.status { margin: 8px 0 0; font-size: 0.85rem; color: var(--muted); }
+
+main { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 0 16px 8px; }
+.view { flex: 1; min-height: 0; overflow: auto; }
+.view[hidden] { display: none; }
 .last-note { font-size: 1.1rem; }
 
-.keyboard-scroll { overflow-x: auto; padding-bottom: 8px; }
+.keyboard-scroll { flex: none; overflow-x: auto; padding-top: 8px; }
 
 .keyboard {
   position: relative;
   display: flex;
-  height: 200px;
-  min-width: calc(var(--white-count) * 36px);
+  height: clamp(100px, 24vh, 190px);
+  /* Fits the screen width; only very narrow screens scroll sideways. */
+  min-width: calc(var(--white-count) * 18px);
   user-select: none;
   touch-action: pan-x;
   --black-width: calc(100% / var(--white-count) * 0.6);
 }
 
 .key {
-  border: 1px solid #888;
+  border: 1px solid var(--key-border);
   padding: 0;
-  font: inherit;
   cursor: pointer;
   display: flex;
   align-items: flex-end;
@@ -63,9 +112,10 @@ main { padding: 0 16px 16px; }
 
 .key.white {
   flex: 1;
+  min-width: 0;
   background: var(--white-key);
-  color: #333;
-  border-radius: 0 0 6px 6px;
+  color: var(--white-key-fg);
+  border-radius: 0 0 5px 5px;
 }
 
 .key.black {
@@ -74,15 +124,17 @@ main { padding: 0 16px 16px; }
   width: var(--black-width);
   height: 62%;
   background: var(--black-key);
-  color: #eee;
+  color: #ddd;
   border-radius: 0 0 4px 4px;
   z-index: 1;
 }
 
-.key .label { font-size: 0.7rem; padding-bottom: 6px; pointer-events: none; }
-.key.black .label { font-size: 0.55rem; }
+.key .label { font-size: 0.65rem; padding-bottom: 5px; pointer-events: none; white-space: nowrap; overflow: hidden; }
+.key.black .label { font-size: 0.5rem; }
 
-.key.expected { box-shadow: inset 0 -10px 0 var(--accent); }
+/* Next key to play: the whole key is tinted so it shows even on a short keyboard. */
+.key.white.expected { background: color-mix(in srgb, var(--accent) 55%, var(--white-key)); }
+.key.black.expected { background: color-mix(in srgb, var(--accent) 75%, var(--black-key)); }
 .key.active { background: var(--accent); color: #fff; }
 .key.correct { background: var(--correct); color: #fff; }
 .key.wrong { background: var(--wrong); color: #fff; }
@@ -93,25 +145,12 @@ main { padding: 0 16px 16px; }
   font-display: block;
 }
 
-.title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-bottom: 12px; }
-.title-row h1 { margin: 0; }
-.tabs { display: flex; gap: 4px; }
-.tabs button {
-  font: inherit;
-  padding: 6px 14px;
-  border: 1px solid var(--muted);
-  background: transparent;
-  color: var(--fg);
-  border-radius: 999px;
-  cursor: pointer;
-}
-.tabs button[aria-current='true'] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+#view-exercises { display: flex; flex-direction: column; }
+#view-exercises[hidden] { display: none; }
+#view-exercises > .controls { margin: 4px 0 8px; }
 
-.view[hidden] { display: none; }
-#view-exercises > .controls { margin-bottom: 12px; }
-
-.staff-box { overflow-x: auto; color: var(--fg); }
-.staff { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.staff-box { flex: 1; min-height: 80px; display: flex; align-items: center; justify-content: center; overflow: auto; color: var(--fg); }
+.staff { display: block; max-width: 100%; max-height: 100%; height: auto; }
 .staff .glyph { font-family: 'Bravura'; fill: currentColor; }
 .staff line { stroke: currentColor; }
 .staff .staff-line, .staff .ledger { stroke-width: 1.2; }
@@ -120,25 +159,17 @@ main { padding: 0 16px 16px; }
 .staff .note.correct { color: var(--correct); }
 .staff .note.wrong { color: var(--wrong); }
 
-.feedback { font-size: 1.1rem; min-height: 1.5em; text-align: center; }
+.feedback { font-size: 1.05rem; min-height: 1.4em; margin: 6px 0; text-align: center; }
+.feedback.inline { flex: 1; min-width: 12em; margin: 0 0 6px; text-align: left; font-size: 0.95rem; }
 .feedback.correct { color: var(--correct); }
 .feedback.wrong { color: var(--wrong); }
-.ex-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.ex-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .ex-footer .status { margin: 0; }
-.ex-footer button { font: inherit; padding: 6px 10px; }
 
-.lib-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
-.lib-actions h2 { margin: 0; font-size: 1.2rem; }
-.lib-actions button, label.button {
-  font: inherit;
-  padding: 6px 12px;
-  border: 1px solid var(--muted);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--fg);
-  cursor: pointer;
-}
-#lib-list h2 { font-size: 1rem; color: var(--muted); margin: 16px 0 8px; }
+.lib-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 4px 0 8px; }
+.lib-actions h2 { margin: 0; font-size: 1.15rem; }
+.lib-actions label.button { align-self: flex-end; }
+#lib-list h2 { font-size: 1rem; color: var(--muted); margin: 12px 0 8px; }
 .score-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .score-list li { display: flex; gap: 8px; }
 .score-open {
@@ -147,21 +178,23 @@ main { padding: 0 16px 16px; }
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  font: inherit;
   text-align: left;
   padding: 10px 12px;
-  border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--fg) 4%, transparent);
-  color: var(--fg);
+  background: var(--surface);
   cursor: pointer;
 }
 .score-open span { font-size: 0.85rem; color: var(--muted); }
-.score-level { font: inherit; font-size: 0.85rem; padding: 0 6px; border-radius: 8px; }
-.lib-actions label.button { align-self: flex-end; }
-.score-delete { font: inherit; font-size: 0.85rem; padding: 0 10px; background: transparent; color: var(--wrong); border: 1px solid currentColor; border-radius: 8px; cursor: pointer; }
-/* Scores are printed black on white, as on paper, even in dark mode. */
-.score-box { background: #fff; color: #000; border-radius: 8px; overflow-x: auto; margin-bottom: 12px; }
+.score-level { font-size: 0.85rem; padding: 0 6px; border-radius: 8px; }
+.score-delete { font-size: 0.85rem; padding: 0 10px; background: transparent; color: var(--wrong); border: 1px solid currentColor; border-radius: 8px; cursor: pointer; }
 
-.practice-bar { margin-bottom: 4px; }
-button.primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); border-radius: 6px; padding: 6px 16px; }
+/* While a score is open, the score takes the free height and scrolls inside itself. */
+#view-library:has(#lib-viewer:not([hidden])) { overflow: hidden; }
+#lib-viewer { height: 100%; display: flex; flex-direction: column; }
+#lib-viewer[hidden] { display: none; }
+.score-box { flex: 1; min-height: 0; background: var(--score-bg); border-radius: 8px; overflow: auto; }
+.score-box svg { filter: var(--score-filter); }
+
+.practice-bar { margin-bottom: 6px; }
+button.primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); border-radius: 6px; padding: 5px 16px; }

@@ -40,13 +40,19 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
   const secondsPerWhole = () => 240 / (scoreTempo(osmd) * options.speed);
   const now = () => performance.now() / 1000;
 
-  for (const input of [handSelect, modeSelect, speedSelect, keysCheck]) {
+  // Showing the next key can be switched on and off while playing.
+  keysCheck.addEventListener('change', () => {
+    options.showKeys = keysCheck.checked;
+    save();
+    keyboard.setExpected(options.showKeys ? expected : []);
+  });
+
+  for (const input of [handSelect, modeSelect, speedSelect]) {
     input.addEventListener('change', () => {
       stop();
       options.hand = /** @type {any} */ (handSelect.value);
       options.mode = /** @type {any} */ (modeSelect.value);
       options.speed = Number(speedSelect.value);
-      options.showKeys = keysCheck.checked;
       save();
       feedback.textContent = '';
     });
@@ -66,8 +72,12 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
     }
   }
 
+  /** Keys of the next notes to play, kept so the hint can be switched on mid-piece. @type {number[]} */
+  let expected = [];
+
   /** @param {number[]} midis */
   function showKeys(midis) {
+    expected = midis;
     keyboard.setExpected(options.showKeys ? midis : []);
   }
 

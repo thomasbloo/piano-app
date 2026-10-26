@@ -15,6 +15,8 @@ const $ = (id) => /** @type {T} */ (document.getElementById(id));
 const labelsSelect = /** @type {HTMLSelectElement} */ ($('labels'));
 const octavesSelect = /** @type {HTMLSelectElement} */ ($('octaves'));
 const soundCheck = /** @type {HTMLInputElement} */ ($('sound'));
+const themeSelect = /** @type {HTMLSelectElement} */ ($('theme'));
+const settingsButton = $('settings-btn');
 const midiButton = /** @type {HTMLButtonElement} */ ($('midi-btn'));
 const midiStatus = $('midi-status');
 const lastNote = $('last-note');
@@ -22,6 +24,20 @@ const lastNote = $('last-note');
 labelsSelect.value = settings.labels;
 octavesSelect.value = String(Math.min(settings.octaves, 5));
 soundCheck.checked = settings.sound;
+themeSelect.value = settings.theme;
+document.documentElement.dataset.theme = settings.theme;
+
+themeSelect.addEventListener('change', () => {
+  settings.theme = /** @type {'dark' | 'light'} */ (themeSelect.value);
+  document.documentElement.dataset.theme = settings.theme;
+  save();
+});
+
+settingsButton.addEventListener('click', () => {
+  const panel = $('settings');
+  panel.hidden = !panel.hidden;
+  settingsButton.setAttribute('aria-expanded', String(!panel.hidden));
+});
 
 /** @param {number} midi @param {number} [velocity] */
 function noteOn(midi, velocity = 100) {
@@ -107,7 +123,7 @@ if (!midiSupported()) {
   midiStatus.textContent = 'Ce navigateur ne gère pas le MIDI. Utilisez Chrome ou Edge.';
 }
 
-midiButton.addEventListener('click', async () => {
+async function startMidi() {
   try {
     await connectMidi({
       onNoteOn: (midi, velocity) => {
@@ -124,10 +140,17 @@ midiButton.addEventListener('click', async () => {
           : 'Accès MIDI accordé, mais aucun appareil branché.';
       },
     });
+    settings.midi = true;
+    save();
   } catch {
     midiStatus.textContent = "L'accès MIDI a été refusé.";
   }
-});
+}
+
+midiButton.addEventListener('click', () => void startMidi());
+
+// Once MIDI has been allowed, reconnect by itself on the next visits.
+if (settings.midi && midiSupported()) void startMidi();
 
 if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
   void navigator.serviceWorker.register('sw.js');
