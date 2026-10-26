@@ -5,6 +5,7 @@
  * @property {string} id
  * @property {string} title
  * @property {string} composer
+ * @property {string} [level]  one of LEVELS from levels.js; missing on scores imported before levels existed
  * @property {string} content  MusicXML text, or the raw bytes of an .mxl file as a binary string.
  * @property {number} addedAt
  */
