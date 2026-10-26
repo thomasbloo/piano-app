@@ -8,6 +8,7 @@
  * @property {'keyboard' | 'exercises' | 'library'} view
  * @property {import('./exercise.js').ExerciseOptions} exercise
  * @property {{ hand: import('./practice.js').HandChoice, mode: 'wait' | 'realtime', speed: number, showKeys: boolean }} practice
+ * @property {import('./streak.js').Streak | null} streak
  */
 
 const KEY = 'piano.settings';
@@ -21,6 +22,7 @@ const DEFAULTS = {
   view: 'keyboard',
   exercise: { clef: 'treble', level: 'staff', accidentals: false, mode: 'single', exactOctave: true },
   practice: { hand: 'right', mode: 'wait', speed: 0.75, showKeys: true },
+  streak: null,
 };
 
 /** @returns {Settings} */

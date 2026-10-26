@@ -38,11 +38,16 @@ export class Keyboard {
   }
 
   /**
-   * Outline the keys to play next, as a hint while playing a score.
-   * @param {number[]} midis
+   * Tint the keys to play next in their hand's colour and name them, as a hint while playing a score.
+   * @param {{ midi: number, hand: 'right' | 'left' }[]} notes
    */
-  setExpected(midis) {
-    for (const [midi, key] of this.#keys) key.classList.toggle('expected', midis.includes(midi));
+  setExpected(notes) {
+    for (const [midi, key] of this.#keys) {
+      const hand = notes.find((n) => n.midi === midi)?.hand;
+      key.classList.toggle('expected', !!hand);
+      key.classList.toggle('expected-right', hand === 'right');
+      key.classList.toggle('expected-left', hand === 'left');
+    }
   }
 
   /**
@@ -85,6 +90,7 @@ export class Keyboard {
         key.append(label);
       }
       key.setAttribute('aria-label', noteName(midi, 'letters', true));
+      key.dataset.name = noteName(midi, labels === 'solfege' ? 'solfege' : 'letters');
       this.#bindPointer(key, midi);
       this.#keys.set(midi, key);
       board.append(key);
