@@ -85,10 +85,22 @@
       <section id="view-library" class="view">
         <div id="lib-index">
           <div class="lib-actions">
-            <label class="button">
-              Importer une partition (MusicXML)
-              <input type="file" id="lib-file" accept=".musicxml,.xml,.mxl" multiple hidden />
-            </label>
+            <div class="controls">
+              <label>
+                Afficher
+                <select id="lib-filter">
+                  <option value="">Tous les niveaux</option>
+                </select>
+              </label>
+              <label>
+                Niveau des partitions importées
+                <select id="lib-level"></select>
+              </label>
+              <label class="button">
+                Importer une partition (MusicXML)
+                <input type="file" id="lib-file" accept=".musicxml,.xml,.mxl" multiple hidden />
+              </label>
+            </div>
           </div>
           <div id="lib-list"></div>
         </div>

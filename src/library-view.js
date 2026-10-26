@@ -1,3 +1,4 @@
+import { LEVELS, filterByLevel } from './levels.js';
 import { scoreInfo } from './score-info.js';
 import { deleteScore, getScore, listScores, saveScore } from './storage.js';
 
@@ -45,6 +46,12 @@ export function createLibraryView({ onScoreOpened, onScoreClosed }) {
   const scoreBox = $('score');
   const status = $('lib-status');
   const fileInput = /** @type {HTMLInputElement} */ ($('lib-file'));
+  const importLevel = /** @type {HTMLSelectElement} */ ($('lib-level'));
+  const filter = /** @type {HTMLSelectElement} */ ($('lib-filter'));
+
+  importLevel.append(...LEVELS.map((level) => new Option(level, level)));
+  filter.append(...LEVELS.map((level) => new Option(level, level)));
+  filter.addEventListener('change', () => void refresh());
 
   /** @type {any} */
   let osmd = null;
@@ -61,11 +68,19 @@ export function createLibraryView({ onScoreOpened, onScoreClosed }) {
     /** @type {LibraryEntry[]} */
     let imported = [];
     try {
-      imported = (await listScores()).map((s) => ({ id: s.id, title: s.title, composer: s.composer, imported: true }));
+      imported = (await listScores()).map((s) => ({ id: s.id, title: s.title, composer: s.composer, level: s.level, imported: true }));
     } catch {
       status.textContent = 'Le stockage du navigateur est indisponible : les partitions importées ne seront pas gardées.';
     }
     list.innerHTML = '';
+    builtIn = filterByLevel(builtIn, filter.value);
+    imported = filterByLevel(imported, filter.value);
+    if (!builtIn.length && !imported.length) {
+      const empty = document.createElement('p');
+      empty.className = 'status';
+      empty.textContent = `Aucune partition de niveau « ${filter.value} ».`;
+      list.append(empty);
+    }
     for (const [heading, entries] of /** @type {[string, LibraryEntry[]][]} */ ([['Morceaux inclus', builtIn], ['Mes partitions', imported]])) {
       if (!entries.length) continue;
       const h = document.createElement('h2');
@@ -87,11 +102,25 @@ export function createLibraryView({ onScoreOpened, onScoreClosed }) {
     const title = document.createElement('strong');
     title.textContent = entry.title;
     const meta = document.createElement('span');
-    meta.textContent = [entry.composer, entry.level].filter(Boolean).join(' · ');
+    // Imported scores show their level in an editable list instead.
+    meta.textContent = [entry.composer, entry.imported ? '' : entry.level].filter(Boolean).join(' · ');
     open.append(title, meta);
     open.addEventListener('click', () => void openScore(entry));
     li.append(open);
     if (entry.imported) {
+      const level = document.createElement('select');
+      level.className = 'score-level';
+      level.setAttribute('aria-label', `Niveau de ${entry.title}`);
+      if (!entry.level) level.append(new Option('Niveau ?', ''));
+      level.append(...LEVELS.map((l) => new Option(l, l)));
+      level.value = entry.level ?? '';
+      level.addEventListener('change', async () => {
+        const stored = await getScore(entry.id);
+        if (!stored) return;
+        await saveScore({ ...stored, level: level.value });
+        await refresh();
+      });
+      li.append(level);
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'score-delete';
@@ -143,7 +172,7 @@ export function createLibraryView({ onScoreOpened, onScoreClosed }) {
     for (const file of files) {
       const content = await readScoreFile(file);
       const { title, composer } = scoreInfo(content, file.name);
-      await saveScore({ id: crypto.randomUUID(), title, composer, content, addedAt: Date.now() });
+      await saveScore({ id: crypto.randomUUID(), title, composer, level: importLevel.value, content, addedAt: Date.now() });
       added++;
     }
     status.textContent = added ? `${added} partition${added > 1 ? 's' : ''} ajoutée${added > 1 ? 's' : ''}.` : '';

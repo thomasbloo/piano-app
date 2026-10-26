@@ -157,6 +157,8 @@ main { padding: 0 16px 16px; }
   cursor: pointer;
 }
 .score-open span { font-size: 0.85rem; color: var(--muted); }
+.score-level { font: inherit; font-size: 0.85rem; padding: 0 6px; border-radius: 8px; }
+.lib-actions label.button { align-self: flex-end; }
 .score-delete { font: inherit; font-size: 0.85rem; padding: 0 10px; background: transparent; color: var(--wrong); border: 1px solid currentColor; border-radius: 8px; cursor: pointer; }
 /* Scores are printed black on white, as on paper, even in dark mode. */
 .score-box { background: #fff; color: #000; border-radius: 8px; overflow-x: auto; margin-bottom: 12px; }
