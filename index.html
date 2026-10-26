@@ -16,6 +16,7 @@
         <nav class="tabs" aria-label="Volets">
           <button type="button" data-view="keyboard">Clavier libre</button>
           <button type="button" data-view="exercises">Exercices</button>
+          <button type="button" data-view="library">Partitions</button>
         </nav>
       </div>
       <div class="controls">
@@ -79,6 +80,26 @@
           <p id="ex-stats" class="status"></p>
           <button id="ex-skip" type="button">Passer</button>
         </div>
+      </section>
+
+      <section id="view-library" class="view">
+        <div id="lib-index">
+          <div class="lib-actions">
+            <label class="button">
+              Importer une partition (MusicXML)
+              <input type="file" id="lib-file" accept=".musicxml,.xml,.mxl" multiple hidden />
+            </label>
+          </div>
+          <div id="lib-list"></div>
+        </div>
+        <div id="lib-viewer" hidden>
+          <div class="lib-actions">
+            <button type="button" id="lib-back">← Toutes les partitions</button>
+            <h2 id="lib-viewer-title"></h2>
+          </div>
+          <div id="score" class="score-box"></div>
+        </div>
+        <p id="lib-status" class="status" aria-live="polite"></p>
       </section>
 
       <div id="keyboard" class="keyboard-scroll"></div>
