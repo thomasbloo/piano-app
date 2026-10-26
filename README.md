@@ -8,9 +8,10 @@ Webapp installable (PWA) pour apprendre à lire les partitions et à jouer du pi
 - Noms des notes sur les touches : aucun, lettres (C D E…) ou solfège (Do Ré Mi…).
 - Taille du clavier réglable : 2, 3, 4 octaves ou clavier complet (88 touches).
 - Connexion d'un vrai piano en MIDI (Chrome ou Edge, sur ordinateur ou sur Android en USB).
+- Exercices de lecture de notes en clé de sol, de fa ou les deux : une note à la fois ou une suite de 8 notes, sur la portée ou avec lignes supplémentaires, dièses en option, octave exacte ou non. On répond au clavier virtuel ou sur le vrai piano en MIDI ; après deux erreurs la bonne touche s'allume. Score du premier coup et série en cours.
 - Installable sur l'écran d'accueil d'Android et utilisable hors ligne une fois ouverte.
 
-À venir : exercices de lecture de notes, bibliothèque de partitions MusicXML, modes main droite / main gauche / deux mains, note par note ou temps réel.
+À venir : bibliothèque de partitions MusicXML, modes main droite / main gauche / deux mains, note par note ou temps réel.
 
 ## Lancer en local
 
@@ -27,3 +28,7 @@ Le MIDI ne fonctionne que sur `localhost` ou en HTTPS.
 - `npm start` : serveur local (Python 3)
 - `npm test` : tests (Node 20 ou plus)
 - `npm run typecheck` : vérification des types via JSDoc (nécessite `tsc`)
+
+## Crédits
+
+Les symboles musicaux utilisent la police [Bravura](https://github.com/steinbergmedia/bravura) (SIL Open Font License, voir `fonts/BRAVURA-LICENSE.txt`).
