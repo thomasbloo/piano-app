@@ -3,6 +3,8 @@
  * @property {import('./notes.js').LabelMode} labels
  * @property {number} octaves
  * @property {boolean} sound
+ * @property {'dark' | 'light'} theme
+ * @property {boolean} midi  MIDI access was granted before, so it reconnects on start
  * @property {'keyboard' | 'exercises' | 'library'} view
  * @property {import('./exercise.js').ExerciseOptions} exercise
  * @property {{ hand: import('./practice.js').HandChoice, mode: 'wait' | 'realtime', speed: number, showKeys: boolean }} practice
@@ -14,6 +16,8 @@ const DEFAULTS = {
   labels: 'letters',
   octaves: 5,
   sound: true,
+  theme: 'dark',
+  midi: false,
   view: 'keyboard',
   exercise: { clef: 'treble', level: 'staff', accidentals: false, mode: 'single', exactOctave: true },
   practice: { hand: 'right', mode: 'wait', speed: 0.75, showKeys: true },
