@@ -44,3 +44,18 @@ export function stopNote(midi) {
   voice.osc.stop(t + 0.35);
   voices.delete(midi);
 }
+
+/** Metronome click for the count-in. @param {boolean} accent  louder and higher on the first beat */
+export function click(accent) {
+  const ac = audio();
+  const osc = ac.createOscillator();
+  const gain = ac.createGain();
+  osc.type = 'square';
+  osc.frequency.value = accent ? 1760 : 1320;
+  const t = ac.currentTime;
+  gain.gain.setValueAtTime(accent ? 0.2 : 0.12, t);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+  osc.connect(gain).connect(ac.destination);
+  osc.start(t);
+  osc.stop(t + 0.06);
+}

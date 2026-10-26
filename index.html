@@ -97,6 +97,34 @@
             <button type="button" id="lib-back">← Toutes les partitions</button>
             <h2 id="lib-viewer-title"></h2>
           </div>
+          <div class="controls practice-bar">
+            <label>
+              Main
+              <select id="pr-hand">
+                <option value="right">Main droite</option>
+                <option value="left">Main gauche</option>
+                <option value="both">Les deux mains</option>
+              </select>
+            </label>
+            <label>
+              Mode
+              <select id="pr-mode">
+                <option value="wait">Note par note</option>
+                <option value="realtime">Temps réel</option>
+              </select>
+            </label>
+            <label>
+              Vitesse
+              <select id="pr-speed">
+                <option value="0.5">50 %</option>
+                <option value="0.75">75 %</option>
+                <option value="1">100 %</option>
+              </select>
+            </label>
+            <label class="check"><input type="checkbox" id="pr-keys" /> Montrer les touches</label>
+            <button type="button" id="pr-start" class="primary">Commencer</button>
+          </div>
+          <p id="pr-feedback" class="feedback" aria-live="polite"></p>
           <div id="score" class="score-box"></div>
         </div>
         <p id="lib-status" class="status" aria-live="polite"></p>

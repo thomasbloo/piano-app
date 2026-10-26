@@ -3,6 +3,7 @@ import { createExerciseView } from './exercise-view.js';
 import { Keyboard } from './keyboard.js';
 import { createLibraryView } from './library-view.js';
 import { connectMidi, midiSupported } from './midi.js';
+import { createPracticeView } from './practice-view.js';
 import { coverRange, keyboardRange, noteName } from './notes.js';
 import { loadSettings, saveSettings } from './settings.js';
 
@@ -27,6 +28,7 @@ function noteOn(midi, velocity = 100) {
   if (settings.sound) startNote(midi, velocity);
   lastNote.textContent = `${noteName(midi, 'letters', true)} · ${noteName(midi, 'solfege', true)}`;
   if (settings.view === 'exercises') exercises.play(midi);
+  if (settings.view === 'library') practice.play(midi);
 }
 
 /** @param {number} midi */
@@ -34,12 +36,11 @@ function noteOff(midi) {
   stopNote(midi);
 }
 
-/** The chosen keyboard size, widened in the exercises so every note asked can be played. */
+/** The chosen keyboard size, widened so every note of the exercise or the open score can be played. */
 function currentRange() {
   const range = keyboardRange(settings.octaves);
-  if (settings.view !== 'exercises') return range;
-  const needed = exercises.range();
-  return coverRange(range, needed.low, needed.high);
+  const needed = settings.view === 'exercises' ? exercises.range() : settings.view === 'library' ? practice.range() : null;
+  return needed ? coverRange(range, needed.low, needed.high) : range;
 }
 
 const keyboard = new Keyboard($('keyboard'), {
@@ -56,8 +57,16 @@ const exercises = createExerciseView({
   onRangeChange: () => keyboard.update(currentRange()),
 });
 
+const practice = createPracticeView({
+  settings,
+  save,
+  keyboard,
+  onRangeChange: () => keyboard.update(currentRange()),
+});
+
 /** @param {import('./settings.js').Settings['view']} view */
 function showView(view) {
+  if (view !== 'library') practice.stop();
   settings.view = view;
   save();
   for (const button of document.querySelectorAll('.tabs button')) {
@@ -69,7 +78,7 @@ function showView(view) {
   keyboard.update(currentRange());
 }
 
-createLibraryView();
+createLibraryView({ onScoreOpened: (osmd) => practice.setScore(osmd), onScoreClosed: () => practice.stop() });
 
 for (const button of document.querySelectorAll('.tabs button')) {
   button.addEventListener('click', () => showView(/** @type {any} */ (/** @type {HTMLElement} */ (button).dataset.view)));

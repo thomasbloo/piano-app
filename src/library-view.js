@@ -31,7 +31,12 @@ async function readScoreFile(file) {
   return binary;
 }
 
-export function createLibraryView() {
+/**
+ * @param {object} deps
+ * @param {(osmd: any) => void} deps.onScoreOpened  Called with the renderer once a score is shown.
+ * @param {() => void} deps.onScoreClosed
+ */
+export function createLibraryView({ onScoreOpened, onScoreClosed }) {
   const $ = (/** @type {string} */ id) => /** @type {HTMLElement} */ (document.getElementById(id));
   const list = $('lib-list');
   const listPanel = $('lib-index');
@@ -116,11 +121,14 @@ export function createLibraryView() {
       viewerTitle.textContent = entry.title;
       const OSMD = /** @type {any} */ (window).opensheetmusicdisplay.OpenSheetMusicDisplay;
       osmd ??= new OSMD(scoreBox, { autoResize: true, backend: 'svg', drawTitle: false, drawComposer: false, drawPartNames: false });
+      // Scroll the page along with the cursor while playing.
+      osmd.FollowCursor = true;
       await osmd.load(content);
       // Smaller on phones so several bars fit on a line.
       osmd.zoom = scoreBox.clientWidth < 600 ? 0.6 : 1;
       osmd.render();
       status.textContent = '';
+      onScoreOpened(osmd);
     } catch (error) {
       listPanel.hidden = false;
       viewer.hidden = true;
@@ -143,6 +151,7 @@ export function createLibraryView() {
   });
 
   $('lib-back').addEventListener('click', () => {
+    onScoreClosed();
     viewer.hidden = true;
     listPanel.hidden = false;
   });

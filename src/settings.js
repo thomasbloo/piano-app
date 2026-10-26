@@ -5,6 +5,7 @@
  * @property {boolean} sound
  * @property {'keyboard' | 'exercises' | 'library'} view
  * @property {import('./exercise.js').ExerciseOptions} exercise
+ * @property {{ hand: import('./practice.js').HandChoice, mode: 'wait' | 'realtime', speed: number, showKeys: boolean }} practice
  */
 
 const KEY = 'piano.settings';
@@ -15,6 +16,7 @@ const DEFAULTS = {
   sound: true,
   view: 'keyboard',
   exercise: { clef: 'treble', level: 'staff', accidentals: false, mode: 'single', exactOctave: true },
+  practice: { hand: 'right', mode: 'wait', speed: 0.75, showKeys: true },
 };
 
 /** @returns {Settings} */
@@ -23,7 +25,7 @@ export function loadSettings() {
     const raw = localStorage.getItem(KEY);
     if (!raw) return structuredClone(DEFAULTS);
     const saved = JSON.parse(raw);
-    return { ...DEFAULTS, ...saved, exercise: { ...DEFAULTS.exercise, ...saved.exercise } };
+    return { ...DEFAULTS, ...saved, exercise: { ...DEFAULTS.exercise, ...saved.exercise }, practice: { ...DEFAULTS.practice, ...saved.practice } };
   } catch {
     return structuredClone(DEFAULTS);
   }
