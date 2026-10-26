@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { RealtimeSession, TIMING_WINDOW, WaitSession, practiceSteps } from '../src/practice.js';
+import { RealtimeSession, TIMING_WINDOW, WaitSession, inPassage, practiceSteps } from '../src/practice.js';
 
 /** Ode to Joy, first bar: right hand E E F G in quarters over a whole C in the left hand. */
 const STEPS = [
-  { cursor: 0, time: 0, notes: [{ midi: 64, hand: 'right', length: 0.25 }, { midi: 48, hand: 'left', length: 1 }] },
-  { cursor: 1, time: 0.25, notes: [{ midi: 64, hand: 'right', length: 0.25 }] },
-  { cursor: 2, time: 0.5, notes: [{ midi: 65, hand: 'right', length: 0.25 }] },
-  { cursor: 3, time: 0.75, notes: [{ midi: 67, hand: 'right', length: 0.25 }] },
-  { cursor: 4, time: 1, notes: [{ midi: 67, hand: 'right', length: 1 }, { midi: 43, hand: 'left', length: 1 }] },
+  { cursor: 0, measure: 0, time: 0, notes: [{ midi: 64, hand: 'right', length: 0.25 }, { midi: 48, hand: 'left', length: 1 }] },
+  { cursor: 1, measure: 0, time: 0.25, notes: [{ midi: 64, hand: 'right', length: 0.25 }] },
+  { cursor: 2, measure: 0, time: 0.5, notes: [{ midi: 65, hand: 'right', length: 0.25 }] },
+  { cursor: 3, measure: 0, time: 0.75, notes: [{ midi: 67, hand: 'right', length: 0.25 }] },
+  { cursor: 4, measure: 1, time: 1, notes: [{ midi: 67, hand: 'right', length: 1 }, { midi: 43, hand: 'left', length: 1 }] },
 ];
 
 test('splits notes between the player and the accompaniment', () => {
@@ -65,4 +65,10 @@ test('real time: the same key played twice takes the closest note', () => {
   assert.equal(session.play(64, 0.11), 'hit');
   assert.equal(session.play(64, 0.12), 'hit');
   assert.equal(session.play(64, 0.13), 'wrong');
+});
+
+test('keeps the steps of the chosen bars only', () => {
+  assert.equal(inPassage(STEPS, null).length, 5);
+  assert.deepEqual(inPassage(STEPS, { first: 1, last: 1 }).map((s) => s.cursor), [4]);
+  assert.deepEqual(inPassage(STEPS, { first: 0, last: 0 }).map((s) => s.cursor), [0, 1, 2, 3]);
 });

@@ -6,13 +6,22 @@
 /** @typedef {'right' | 'left'} Hand */
 /** @typedef {Hand | 'both'} HandChoice */
 /** @typedef {{ midi: number, hand: Hand, length: number }} StepNote  length in whole notes */
-/** @typedef {{ cursor: number, time: number, notes: StepNote[] }} Step */
+/** @typedef {{ cursor: number, time: number, measure: number, notes: StepNote[] }} Step  measure: index from 0 */
 
 /** Seconds of tolerance either side of a note in real-time mode. */
 export const TIMING_WINDOW = 0.2;
 
 /** @param {StepNote} note @param {HandChoice} hand */
 const forHand = (note, hand) => hand === 'both' || note.hand === hand;
+
+/**
+ * Keep only the steps of a passage, from bar `first` to bar `last` included (indexes from 0).
+ * @param {Step[]} steps
+ * @param {{ first: number, last: number } | null} passage  null for the whole piece
+ */
+export function inPassage(steps, passage) {
+  return passage ? steps.filter((s) => s.measure >= passage.first && s.measure <= passage.last) : steps;
+}
 
 /**
  * Split steps into the notes the player must play and the notes the app plays for them.
@@ -26,6 +35,7 @@ export function practiceSteps(steps, hand) {
     .map((step) => ({
       cursor: step.cursor,
       time: step.time,
+      measure: step.measure,
       notes: step.notes.filter((n) => forHand(n, hand)),
       accompaniment: step.notes.filter((n) => !forHand(n, hand)),
     }))
