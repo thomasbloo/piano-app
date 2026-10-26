@@ -1,4 +1,5 @@
 import { LEVELS, filterByLevel } from './levels.js';
+import { msczToMusicXml, mscxToMusicXml } from './mscz.js';
 import { scoreInfo } from './score-info.js';
 import { colorHands } from './score-steps.js';
 import { deleteScore, getScore, listScores, saveScore } from './storage.js';
@@ -22,11 +23,14 @@ function loadOsmd() {
 
 /**
  * Read a file as text, or as a binary string for compressed .mxl, which OSMD unzips itself.
+ * MuseScore files are converted to MusicXML.
  * @param {File} file
  */
 async function readScoreFile(file) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const isZip = bytes[0] === 0x50 && bytes[1] === 0x4b;
+  if (/\.mscz$/i.test(file.name)) return msczToMusicXml(bytes);
+  if (/\.mscx$/i.test(file.name)) return mscxToMusicXml(new TextDecoder().decode(bytes));
   if (!isZip) return new TextDecoder().decode(bytes);
   let binary = '';
   for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
@@ -178,13 +182,22 @@ export function createLibraryView({ onScoreOpened, onScoreClosed }) {
     const files = [...(fileInput.files ?? [])];
     fileInput.value = '';
     let added = 0;
+    /** @type {string[]} */
+    const failed = [];
     for (const file of files) {
-      const content = await readScoreFile(file);
-      const { title, composer } = scoreInfo(content, file.name);
-      await saveScore({ id: crypto.randomUUID(), title, composer, level: importLevel.value, content, addedAt: Date.now() });
-      added++;
+      try {
+        const content = await readScoreFile(file);
+        const { title, composer } = scoreInfo(content, file.name);
+        await saveScore({ id: crypto.randomUUID(), title, composer, level: importLevel.value, content, addedAt: Date.now() });
+        added++;
+      } catch {
+        failed.push(file.name);
+      }
     }
-    status.textContent = added ? `${added} partition${added > 1 ? 's' : ''} ajoutée${added > 1 ? 's' : ''}.` : '';
+    status.textContent = [
+      added ? `${added} partition${added > 1 ? 's' : ''} ajoutée${added > 1 ? 's' : ''}.` : '',
+      failed.length ? `Fichier${failed.length > 1 ? 's' : ''} illisible${failed.length > 1 ? 's' : ''} : ${failed.join(', ')}.` : '',
+    ].filter(Boolean).join(' ');
     await refresh();
   });
 
