@@ -2,6 +2,9 @@ import { click, startNote, stopNote } from './audio.js';
 import { RealtimeSession, WaitSession, practiceSteps } from './practice.js';
 import { readSteps, scoreTempo } from './score-steps.js';
 
+/** How long the "Bravo !" or "Oups" badge stays on the score, in ms. */
+const TOAST_TIME = 700;
+
 /**
  * Practice bar under an open score: choose the hand and the mode, then play along.
  * @param {object} deps
@@ -9,21 +12,31 @@ import { readSteps, scoreTempo } from './score-steps.js';
  * @param {() => void} deps.save
  * @param {import('./keyboard.js').Keyboard} deps.keyboard
  * @param {() => void} deps.onRangeChange
+ * @param {() => void} deps.onRightNote  Called on each right note, to count the day in the streak.
  */
-export function createPracticeView({ settings, save, keyboard, onRangeChange }) {
+export function createPracticeView({ settings, save, keyboard, onRangeChange, onRightNote }) {
   const $ = (/** @type {string} */ id) => /** @type {HTMLElement} */ (document.getElementById(id));
-  const handSelect = /** @type {HTMLSelectElement} */ ($('pr-hand'));
-  const modeSelect = /** @type {HTMLSelectElement} */ ($('pr-mode'));
+  const handButtons = /** @type {HTMLButtonElement[]} */ ([...document.querySelectorAll('#lib-viewer [data-hand]')]);
+  const modeButtons = /** @type {HTMLButtonElement[]} */ ([...document.querySelectorAll('#lib-viewer [data-mode]')]);
   const speedSelect = /** @type {HTMLSelectElement} */ ($('pr-speed'));
-  const keysCheck = /** @type {HTMLInputElement} */ ($('pr-keys'));
+  const keysButton = $('pr-keys');
   const startButton = /** @type {HTMLButtonElement} */ ($('pr-start'));
+  const startText = $('pr-start-text');
   const feedback = $('pr-feedback');
+  const toast = $('pr-toast');
+  const ring = $('pr-ring');
+  const percent = $('pr-percent');
+  const progress = $('pr-progress');
 
   const options = settings.practice;
-  handSelect.value = options.hand;
-  modeSelect.value = options.mode;
   speedSelect.value = String(options.speed);
-  keysCheck.checked = options.showKeys;
+
+  function showOptions() {
+    for (const b of handButtons) b.setAttribute('aria-pressed', String(b.dataset.hand === options.hand));
+    for (const b of modeButtons) b.setAttribute('aria-pressed', String(b.dataset.mode === options.mode));
+    keysButton.setAttribute('aria-pressed', String(options.showKeys));
+  }
+  showOptions();
 
   /** @type {any} */
   let osmd = null;
@@ -36,26 +49,61 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
   let frame = 0;
   /** @type {ReturnType<typeof setTimeout>[]} */
   let timers = [];
+  /** Right notes in a row, reset by a wrong or missed note. */
+  let inARow = 0;
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  let toastTimer;
 
   const secondsPerWhole = () => 240 / (scoreTempo(osmd) * options.speed);
   const now = () => performance.now() / 1000;
 
   // Showing the next key can be switched on and off while playing.
-  keysCheck.addEventListener('change', () => {
-    options.showKeys = keysCheck.checked;
+  keysButton.addEventListener('click', () => {
+    options.showKeys = !options.showKeys;
     save();
+    showOptions();
     keyboard.setExpected(options.showKeys ? expected : []);
   });
 
-  for (const input of [handSelect, modeSelect, speedSelect]) {
-    input.addEventListener('change', () => {
-      stop();
-      options.hand = /** @type {any} */ (handSelect.value);
-      options.mode = /** @type {any} */ (modeSelect.value);
-      options.speed = Number(speedSelect.value);
-      save();
-      feedback.textContent = '';
-    });
+  /** Any change of hand, mode or speed stops the piece. */
+  function changed() {
+    stop();
+    save();
+    showOptions();
+    feedback.textContent = '';
+    showProgress(0);
+  }
+  for (const b of handButtons) b.addEventListener('click', () => { options.hand = /** @type {any} */ (b.dataset.hand); changed(); });
+  for (const b of modeButtons) b.addEventListener('click', () => { options.mode = /** @type {any} */ (b.dataset.mode); changed(); });
+  speedSelect.addEventListener('change', () => { options.speed = Number(speedSelect.value); changed(); });
+
+  /** @param {'correct' | 'wrong'} kind */
+  function showToast(kind) {
+    toast.textContent = kind === 'correct' ? 'Bravo !' : 'Oups';
+    toast.className = `toast ${kind} visible`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('visible'), TOAST_TIME);
+  }
+
+  /** @param {boolean} right */
+  function judged(right) {
+    inARow = right ? inARow + 1 : 0;
+    if (right) onRightNote();
+    showToast(right ? 'correct' : 'wrong');
+  }
+
+  /** Progress ring and the line under the title. @param {number} done  share of the piece played, 0 to 1 */
+  function showProgress(done) {
+    const value = Math.round(done * 100);
+    ring.setAttribute('stroke-dasharray', `${value} 100`);
+    percent.textContent = `${value}%`;
+    const bars = osmd?.Sheet?.SourceMeasures?.length ?? 0;
+    const bar = done >= 1 ? bars : session && osmd ? osmd.cursor.Iterator.CurrentMeasureIndex + 1 : 1;
+    progress.textContent = [
+      osmd?.Sheet?.ComposerString,
+      bars ? `mesure ${Math.min(bar, bars)} sur ${bars}` : '',
+      inARow > 1 ? `${inARow} justes d'affilée` : '',
+    ].filter(Boolean).join(' · ');
   }
 
   startButton.addEventListener('click', () => (session ? stop() : start()));
@@ -72,14 +120,17 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
     }
   }
 
-  /** Keys of the next notes to play, kept so the hint can be switched on mid-piece. @type {number[]} */
+  /** Next notes to play, kept so the hint can be switched on mid-piece. @type {import('./practice.js').StepNote[]} */
   let expected = [];
 
-  /** @param {number[]} midis */
-  function showKeys(midis) {
-    expected = midis;
-    keyboard.setExpected(options.showKeys ? midis : []);
+  /** @param {import('./practice.js').StepNote[]} notes */
+  function showKeys(notes) {
+    expected = notes;
+    keyboard.setExpected(options.showKeys ? notes : []);
   }
+
+  /** Notes of the current step still to play in note-by-note mode. @param {WaitSession} wait */
+  const waitingNotes = (wait) => (wait.finished ? [] : wait.current.notes.filter((n) => wait.remaining.includes(n.midi)));
 
   /** Play the other hand's notes for as long as they last. @param {import('./practice.js').StepNote[]} notes @param {number} delay seconds */
   function accompany(notes, delay = 0) {
@@ -97,7 +148,9 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
       feedback.textContent = options.hand === 'left' ? "Cette partition n'a pas de main gauche." : 'Rien à jouer pour cette main.';
       return;
     }
-    startButton.textContent = 'Arrêter';
+    startText.textContent = 'Arrêter';
+    startButton.classList.add('playing');
+    inARow = 0;
     osmd.cursor.reset();
     cursorPosition = 0;
     osmd.cursor.show();
@@ -108,7 +161,8 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
       const intro = wait.start();
       intro.forEach((s) => accompany(s.accompaniment, (s.time - intro[0].time) * secondsPerWhole()));
       moveCursor(wait.current.cursor);
-      showKeys(wait.remaining);
+      showKeys(waitingNotes(wait));
+      showProgress(0);
       startedAt = now();
       feedback.textContent = 'Jouez les notes sous le curseur. La partition vous attend.';
       return;
@@ -128,13 +182,18 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
         for (const step of started) {
           moveCursor(step.cursor);
           accompany(step.accompaniment);
-          showKeys(step.notes.map((n) => n.midi));
+          showKeys(step.notes);
         }
+        if (started.length) showProgress(Math.min(1, t / realtime.duration));
         if (started.length && t < 0.5) feedback.textContent = '';
-        if (missed) feedback.textContent = missed > 1 ? `${missed} notes manquées` : 'Note manquée';
+        if (missed) {
+          inARow = 0;
+          feedback.textContent = missed > 1 ? `${missed} notes manquées` : 'Note manquée';
+        }
         if (finished) {
           const { hits, missed: allMissed, wrong, total } = realtime.stats;
           stop();
+          showProgress(1);
           feedback.textContent = `Terminé : ${hits}/${total} notes justes et à temps (${Math.round((100 * hits) / total)} %), ${allMissed} manquée${allMissed > 1 ? 's' : ''}, ${wrong} fausse${wrong > 1 ? 's' : ''} note${wrong > 1 ? 's' : ''}.`;
           return;
         }
@@ -149,7 +208,8 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
     timers.forEach(clearTimeout);
     timers = [];
     session = null;
-    startButton.textContent = 'Commencer';
+    startText.textContent = 'Jouer';
+    startButton.classList.remove('playing');
     showKeys([]);
     osmd?.cursor.hide();
   }
@@ -161,6 +221,7 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
       osmd = instance;
       steps = readSteps(osmd);
       feedback.textContent = '';
+      showProgress(0);
       onRangeChange();
     },
 
@@ -178,15 +239,19 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
       if (session instanceof RealtimeSession) {
         const result = session.play(midi, now() - startedAt);
         keyboard.flash(midi, result === 'hit' ? 'correct' : 'wrong');
+        judged(result === 'hit');
         return;
       }
       const result = session.play(midi);
       if (result.result === 'ignored') return;
       if (result.result === 'wrong') {
         keyboard.flash(midi, 'wrong');
+        judged(false);
+        showProgress(session.index / session.steps.length);
         return;
       }
       keyboard.flash(midi, 'correct');
+      judged(true);
       const spw = secondsPerWhole();
       if (result.firstHit && result.step) accompany(result.step.accompaniment);
       if (result.result === 'advance' && result.step) {
@@ -197,11 +262,13 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange }) 
         const { notes, wrong } = session.stats;
         const seconds = Math.round(now() - startedAt);
         stop();
+        showProgress(1);
         feedback.textContent = `Terminé en ${Math.floor(seconds / 60)} min ${seconds % 60} s : ${notes} notes, ${wrong} erreur${wrong > 1 ? 's' : ''}.`;
         return;
       }
       moveCursor(session.current.cursor);
-      showKeys(session.remaining);
+      showKeys(waitingNotes(session));
+      showProgress(session.index / session.steps.length);
     },
   };
 }

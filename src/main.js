@@ -6,6 +6,7 @@ import { connectMidi, midiSupported } from './midi.js';
 import { createPracticeView } from './practice-view.js';
 import { coverRange, keyboardRange, noteName } from './notes.js';
 import { loadSettings, saveSettings } from './settings.js';
+import { dayOf, practised, streakDays } from './streak.js';
 
 const settings = loadSettings();
 const save = () => saveSettings(settings);
@@ -19,6 +20,8 @@ const themeSelect = /** @type {HTMLSelectElement} */ ($('theme'));
 const settingsButton = $('settings-btn');
 const midiButton = /** @type {HTMLButtonElement} */ ($('midi-btn'));
 const midiStatus = $('midi-status');
+const midiName = $('midi-name');
+const midiMessage = $('midi-message');
 const lastNote = $('last-note');
 
 labelsSelect.value = settings.labels;
@@ -38,6 +41,23 @@ settingsButton.addEventListener('click', () => {
   panel.hidden = !panel.hidden;
   settingsButton.setAttribute('aria-expanded', String(!panel.hidden));
 });
+
+/** Days practised in a row, shown in the header. */
+function showStreak() {
+  const days = streakDays(settings.streak, dayOf(new Date()));
+  $('streak').hidden = days === 0;
+  $('streak-text').textContent = `Série de ${days} jour${days > 1 ? 's' : ''}`;
+}
+
+/** A right note in an exercise or a score counts today in the streak. */
+function rightNote() {
+  const streak = practised(settings.streak, dayOf(new Date()));
+  if (streak === settings.streak) return;
+  settings.streak = streak;
+  save();
+  showStreak();
+}
+showStreak();
 
 /** @param {number} midi @param {number} [velocity] */
 function noteOn(midi, velocity = 100) {
@@ -71,6 +91,7 @@ const exercises = createExerciseView({
   save,
   keyboard,
   onRangeChange: () => keyboard.update(currentRange()),
+  onRightNote: rightNote,
 });
 
 const practice = createPracticeView({
@@ -78,6 +99,7 @@ const practice = createPracticeView({
   save,
   keyboard,
   onRangeChange: () => keyboard.update(currentRange()),
+  onRightNote: rightNote,
 });
 
 /** @param {import('./settings.js').Settings['view']} view */
@@ -120,7 +142,7 @@ soundCheck.addEventListener('change', () => {
 
 if (!midiSupported()) {
   midiButton.disabled = true;
-  midiStatus.textContent = 'Ce navigateur ne gère pas le MIDI. Utilisez Chrome ou Edge.';
+  midiMessage.textContent = 'Ce navigateur ne gère pas le MIDI. Utilisez Chrome ou Edge.';
 }
 
 async function startMidi() {
@@ -135,15 +157,16 @@ async function startMidi() {
         noteOff(midi);
       },
       onDevicesChange: (names) => {
-        midiStatus.textContent = names.length
-          ? `MIDI connecté : ${names.join(', ')}`
-          : 'Accès MIDI accordé, mais aucun appareil branché.';
+        midiStatus.hidden = !names.length;
+        midiName.textContent = names.join(', ');
+        midiStatus.title = `MIDI connecté : ${names.join(', ')}`;
+        midiMessage.textContent = names.length ? '' : 'Aucun piano MIDI branché.';
       },
     });
     settings.midi = true;
     save();
   } catch {
-    midiStatus.textContent = "L'accès MIDI a été refusé.";
+    midiMessage.textContent = "L'accès MIDI a été refusé.";
   }
 }
 

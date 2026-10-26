@@ -12,8 +12,9 @@ const NEXT_DELAY = 500;
  * @param {() => void} deps.save
  * @param {import('./keyboard.js').Keyboard} deps.keyboard
  * @param {() => void} deps.onRangeChange  Called when the exercise needs a different keyboard range.
+ * @param {() => void} deps.onRightNote  Called on each right answer, to count the day in the streak.
  */
-export function createExerciseView({ settings, save, keyboard, onRangeChange }) {
+export function createExerciseView({ settings, save, keyboard, onRangeChange, onRightNote }) {
   const $ = (/** @type {string} */ id) => /** @type {HTMLElement} */ (document.getElementById(id));
   const clefSelect = /** @type {HTMLSelectElement} */ ($('ex-clef'));
   const levelSelect = /** @type {HTMLSelectElement} */ ($('ex-level'));
@@ -85,6 +86,7 @@ export function createExerciseView({ settings, save, keyboard, onRangeChange }) 
       const name = (/** @type {number} */ m) => `${noteName(m, 'solfege', true)} (${noteName(m, 'letters', true)})`;
       if (result.correct) {
         keyboard.flash(midi, 'correct');
+        onRightNote();
         feedback.textContent = `Bravo, c'est ${name(target)}.`;
         feedback.className = 'feedback correct';
         if (result.finished) {

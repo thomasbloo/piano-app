@@ -35,3 +35,25 @@ export function readSteps(osmd) {
 export function scoreTempo(osmd) {
   return osmd.Sheet?.DefaultStartTempoInBpm || 100;
 }
+
+/** Colours of each hand, on the score and on the keys. */
+export const HAND_COLORS = { right: '#2f6fd6', left: '#e07a1f' };
+
+/**
+ * Colour the notes of a loaded score by hand, before it is rendered.
+ * @param {any} osmd
+ */
+export function colorHands(osmd) {
+  for (const measure of osmd.Sheet?.SourceMeasures ?? []) {
+    for (const container of measure.VerticalSourceStaffEntryContainers) {
+      for (const entry of container.StaffEntries) {
+        if (!entry) continue;
+        const color = entry.ParentStaff.idInMusicSheet === 0 ? HAND_COLORS.right : HAND_COLORS.left;
+        for (const voiceEntry of entry.VoiceEntries) {
+          voiceEntry.StemColor = color;
+          for (const note of voiceEntry.Notes) note.NoteheadColor = color;
+        }
+      }
+    }
+  }
+}

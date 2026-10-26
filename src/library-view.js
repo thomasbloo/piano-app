@@ -1,5 +1,6 @@
 import { LEVELS, filterByLevel } from './levels.js';
 import { scoreInfo } from './score-info.js';
+import { colorHands } from './score-steps.js';
 import { deleteScore, getScore, listScores, saveScore } from './storage.js';
 
 /** @typedef {{ id: string, title: string, composer: string, level?: string, file?: string, imported: boolean }} LibraryEntry */
@@ -149,10 +150,18 @@ export function createLibraryView({ onScoreOpened, onScoreClosed }) {
       viewer.hidden = false;
       viewerTitle.textContent = entry.title;
       const OSMD = /** @type {any} */ (window).opensheetmusicdisplay.OpenSheetMusicDisplay;
-      osmd ??= new OSMD(scoreBox, { autoResize: true, backend: 'svg', drawTitle: false, drawComposer: false, drawPartNames: false });
+      osmd ??= new OSMD(scoreBox, {
+        autoResize: true,
+        backend: 'svg',
+        drawTitle: false,
+        drawComposer: false,
+        drawPartNames: false,
+        cursorsOptions: [{ type: 0, color: '#ffd166', alpha: 0.6, follow: true }],
+      });
       // Scroll the page along with the cursor while playing.
       osmd.FollowCursor = true;
       await osmd.load(content);
+      colorHands(osmd);
       // Smaller on phones so several bars fit on a line.
       osmd.zoom = scoreBox.clientWidth < 600 ? 0.6 : 1;
       osmd.render();
