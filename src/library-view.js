@@ -156,10 +156,10 @@ export function createLibraryView({ onScoreOpened, onScoreClosed }) {
         drawTitle: false,
         drawComposer: false,
         drawPartNames: false,
-        cursorsOptions: [{ type: 0, color: '#ffd166', alpha: 0.6, follow: true }],
+        cursorsOptions: [{ type: 0, color: '#ffd166', alpha: 0.6, follow: false }],
       });
-      // Scroll the page along with the cursor while playing.
-      osmd.FollowCursor = true;
+      // The practice view scrolls the score itself, keeping the current line at the top.
+      osmd.FollowCursor = false;
       await osmd.load(content);
       colorHands(osmd);
       // Smaller on phones so several bars fit on a line.

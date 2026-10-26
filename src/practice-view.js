@@ -238,6 +238,34 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
       osmd.cursor.next();
       cursorPosition++;
     }
+    keepLineAtTop();
+  }
+
+  /** Space left above the current line for the passage and speed chips, in pixels. */
+  const TOP_ROOM = 52;
+
+  /** Scroll so the line being played sits at the top of the score and the next one shows in full below. */
+  function keepLineAtTop() {
+    const cursor = scoreBox.querySelector('[id^="cursorImg"]');
+    if (!cursor) return;
+    const top = cursor.getBoundingClientRect().top - scoreBox.getBoundingClientRect().top + scoreBox.scrollTop;
+    const target = Math.max(0, top - TOP_ROOM);
+    if (Math.abs(target - scoreBox.scrollTop) > 8) scoreBox.scrollTo({ top: target, behavior: 'smooth' });
+  }
+
+  /** Notes the app is sounding, so they can all be silenced when the piece is stopped. @type {Set<number>} */
+  const sounding = new Set();
+
+  /** @param {number} midi @param {number} velocity @param {number} delay seconds @param {number} length seconds */
+  function sound(midi, velocity, delay, length) {
+    timers.push(setTimeout(() => {
+      startNote(midi, velocity);
+      sounding.add(midi);
+    }, delay * 1000));
+    timers.push(setTimeout(() => {
+      stopNote(midi);
+      sounding.delete(midi);
+    }, (delay + length) * 1000));
   }
 
   /** Next notes to play, kept so the hint can be switched on mid-piece. @type {import('./practice.js').StepNote[]} */
@@ -257,8 +285,7 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
     if (!options.accompany) return;
     const spw = secondsPerWhole();
     for (const note of notes) {
-      timers.push(setTimeout(() => startNote(note.midi, 70), delay * 1000));
-      timers.push(setTimeout(() => stopNote(note.midi), (delay + note.length * spw * 0.95) * 1000));
+      sound(note.midi, 70, delay, note.length * spw * 0.95);
     }
   }
 
@@ -273,6 +300,7 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
     osmd.cursor.reset();
     cursorPosition = 0;
     osmd.cursor.show();
+    keepLineAtTop();
   }
 
   /** Play the passage or the piece at tempo, for the player to hear how it goes. */
@@ -295,10 +323,7 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
         moveCursor(step.cursor);
         showKeys(step.notes);
         showProgress(at / Math.max(end, 0.001));
-        for (const note of step.notes) {
-          startNote(note.midi, 90);
-          timers.push(setTimeout(() => stopNote(note.midi), note.length * spw * 950));
-        }
+        for (const note of step.notes) sound(note.midi, 90, 0, note.length * spw * 0.95);
         accompany(step.accompaniment);
       }, at * 1000));
       end = Math.max(end, at + Math.max(0, ...[...step.notes, ...step.accompaniment].map((n) => n.length)) * spw);
@@ -374,6 +399,8 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
     cancelAnimationFrame(frame);
     timers.forEach(clearTimeout);
     timers = [];
+    sounding.forEach((midi) => stopNote(midi));
+    sounding.clear();
     session = null;
     listening = false;
     listenText.textContent = 'Écouter';
