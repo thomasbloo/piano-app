@@ -19,10 +19,11 @@ test('computes A4 at 440 Hz', () => {
   assert.ok(Math.abs(frequency(81) - 880) < 1e-9);
 });
 
-test('centres ranges on middle C', () => {
+test('centres ranges on middle C, up to 61 keys', () => {
   assert.deepEqual(keyboardRange(2), { low: 48, high: 72 });
   assert.deepEqual(keyboardRange(3), { low: 48, high: 84 });
-  assert.deepEqual(keyboardRange(7), { low: 21, high: 108 });
+  assert.deepEqual(keyboardRange(5), { low: 36, high: 96 });
+  assert.deepEqual(keyboardRange(7), { low: 36, high: 96 });
 });
 
 test('widens a keyboard range to whole octaves', () => {

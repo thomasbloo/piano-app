@@ -11,7 +11,7 @@ const KEY = 'piano.settings';
 /** @type {Settings} */
 const DEFAULTS = {
   labels: 'letters',
-  octaves: 3,
+  octaves: 5,
   sound: true,
   view: 'keyboard',
   exercise: { clef: 'treble', level: 'staff', accidentals: false, mode: 'single', exactOctave: true },

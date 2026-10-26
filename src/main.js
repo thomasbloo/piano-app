@@ -18,7 +18,7 @@ const midiStatus = $('midi-status');
 const lastNote = $('last-note');
 
 labelsSelect.value = settings.labels;
-octavesSelect.value = String(settings.octaves);
+octavesSelect.value = String(Math.min(settings.octaves, 5));
 soundCheck.checked = settings.sound;
 
 /** @param {number} midi @param {number} [velocity] */
