@@ -1,5 +1,5 @@
 /* Playful look: deep indigo by default, a light theme as a setting. Each hand has its colour,
-   blue for the right and orange for the left, on the score and on the keys. */
+   orange for the right and blue for the left, on the score and on the keys. */
 :root {
   --bg: #1a1830;
   --surface: #24223f;
@@ -12,10 +12,10 @@
   --accent-fg: #1a1830;
   --accent-shadow: #c99a2e;
   --hint: #ffd166;
-  --right: #5aa9ff;
-  --right-bg: #1e3a66;
-  --left: #ffb86b;
-  --left-bg: #4a3020;
+  --right: #ffb86b;
+  --right-bg: #4a3020;
+  --left: #5aa9ff;
+  --left-bg: #1e3a66;
   --correct: #5bd68a;
   --wrong: #ff6b81;
   --white-key: #fbfaff;
@@ -38,10 +38,10 @@
   --accent: #ffc23d;
   --accent-shadow: #d19a1c;
   --hint: #a86f00;
-  --right: #2f6fd6;
-  --right-bg: #dbe8ff;
-  --left: #d0680f;
-  --left-bg: #ffe6cf;
+  --right: #d0680f;
+  --right-bg: #ffe6cf;
+  --left: #2f6fd6;
+  --left-bg: #dbe8ff;
   --correct: #1f9e55;
   --wrong: #e0405a;
   --white-key: #ffffff;
@@ -120,7 +120,7 @@ select, .controls button, .ex-footer button, label.button {
 .tabs button[aria-current='true'] { background: var(--accent); color: var(--accent-fg); font-weight: 800; }
 .chip { display: flex; align-items: center; gap: 6px; height: 40px; margin: 0; padding: 0 14px; border-radius: 20px; background: var(--raised); font-weight: 800; font-size: 0.85rem; }
 .chip[hidden] { display: none; }
-.chip.streak { color: var(--left); }
+.chip.streak { color: var(--right); }
 .chip.streak svg { color: #ff8a4c; }
 .chip.midi { color: var(--correct); }
 .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
