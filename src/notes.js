@@ -33,11 +33,11 @@ export function frequency(midi) {
 }
 
 /**
- * Keyboard range centred on middle C for 2 to 4 octaves, or the full 88 keys.
- * @param {number} octaves
+ * Keyboard range centred on middle C. 5 octaves is a 61-key keyboard, C2 to C7, like the Yamaha NP15.
+ * @param {number} octaves  2 to 5; larger values from older saved settings are treated as 5.
  */
 export function keyboardRange(octaves) {
-  if (octaves >= 7) return { low: 21, high: 108 };
+  octaves = Math.min(octaves, 5);
   const low = 60 - 12 * Math.floor(octaves / 2);
   return { low, high: low + 12 * octaves };
 }
