@@ -38,6 +38,14 @@ export class Keyboard {
   }
 
   /**
+   * Outline the keys to play next, as a hint while playing a score.
+   * @param {number[]} midis
+   */
+  setExpected(midis) {
+    for (const [midi, key] of this.#keys) key.classList.toggle('expected', midis.includes(midi));
+  }
+
+  /**
    * Mark a key as right or wrong for a short moment, used by the exercises.
    * @param {number} midi
    * @param {'correct' | 'wrong'} kind

@@ -10,9 +10,12 @@ Webapp installable (PWA) pour apprendre à lire les partitions et à jouer du pi
 - Connexion d'un vrai piano en MIDI (Chrome ou Edge, sur ordinateur ou sur Android en USB).
 - Exercices de lecture de notes en clé de sol, de fa ou les deux : une note à la fois ou une suite de 8 notes, sur la portée ou avec lignes supplémentaires, dièses en option, octave exacte ou non. On répond au clavier virtuel ou sur le vrai piano en MIDI ; après deux erreurs la bonne touche s'allume. Score du premier coup et série en cours.
 - Bibliothèque de partitions : quatre morceaux du domaine public inclus (Au clair de la lune, Frère Jacques, Ah ! vous dirai-je maman, Ode à la joie) et import de vos propres fichiers MusicXML (`.musicxml`, `.xml` ou `.mxl` compressé), gardés dans le navigateur. On en trouve sur [IMSLP](https://imslp.org) ou [MuseScore](https://musescore.com), qui permet aussi d'exporter en MusicXML.
-- Installable sur l'écran d'accueil d'Android et utilisable hors ligne une fois ouverte.
+- Jouer une partition de la bibliothèque, main droite, main gauche ou les deux mains :
+  - **note par note** : la partition attend que vous jouiez les bonnes notes sous le curseur ;
+  - **temps réel** : après une mesure de décompte, le curseur avance au tempo (50, 75 ou 100 %) et chaque note est jugée juste, manquée ou fausse.
 
-À venir : jouer les partitions de la bibliothèque, avec les modes main droite / main gauche / deux mains, note par note ou temps réel.
+  L'app joue l'autre main pour vous, peut surligner les touches à jouer, et donne un bilan à la fin.
+- Installable sur l'écran d'accueil d'Android et utilisable hors ligne une fois ouverte.
 
 ## Lancer en local
 
