@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1f2933" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="src/style.css" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <title>Piano</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Piano</h1>
+      <div class="controls">
+        <label>
+          Noms des notes
+          <select id="labels">
+            <option value="none">Aucun</option>
+            <option value="letters">Lettres (C D E)</option>
+            <option value="solfege">Solfège (Do Ré Mi)</option>
+          </select>
+        </label>
+        <label>
+          Octaves
+          <select id="octaves">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="7">Clavier complet</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="sound" /> Son</label>
+        <button id="midi-btn" type="button">Connecter le MIDI</button>
+      </div>
+      <p id="midi-status" class="status"></p>
+    </header>
+    <main>
+      <p class="last-note">Dernière note : <strong id="last-note">–</strong></p>
+      <div id="keyboard" class="keyboard-scroll"></div>
+    </main>
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
