@@ -39,7 +39,7 @@ export function scoreTempo(osmd) {
 }
 
 /** Colours of each hand, on the score and on the keys. */
-export const HAND_COLORS = { right: '#2f6fd6', left: '#e07a1f' };
+export const HAND_COLORS = { right: '#e07a1f', left: '#2f6fd6' };
 
 /**
  * Colour the notes of a loaded score by hand, before it is rendered.
