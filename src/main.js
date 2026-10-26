@@ -1,6 +1,7 @@
 import { startNote, stopNote } from './audio.js';
 import { createExerciseView } from './exercise-view.js';
 import { Keyboard } from './keyboard.js';
+import { createLibraryView } from './library-view.js';
 import { connectMidi, midiSupported } from './midi.js';
 import { coverRange, keyboardRange, noteName } from './notes.js';
 import { loadSettings, saveSettings } from './settings.js';
@@ -55,7 +56,7 @@ const exercises = createExerciseView({
   onRangeChange: () => keyboard.update(currentRange()),
 });
 
-/** @param {'keyboard' | 'exercises'} view */
+/** @param {import('./settings.js').Settings['view']} view */
 function showView(view) {
   settings.view = view;
   save();
@@ -64,8 +65,11 @@ function showView(view) {
   }
   $('view-keyboard').hidden = view !== 'keyboard';
   $('view-exercises').hidden = view !== 'exercises';
+  $('view-library').hidden = view !== 'library';
   keyboard.update(currentRange());
 }
+
+createLibraryView();
 
 for (const button of document.querySelectorAll('.tabs button')) {
   button.addEventListener('click', () => showView(/** @type {any} */ (/** @type {HTMLElement} */ (button).dataset.view)));

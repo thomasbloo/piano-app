@@ -3,7 +3,7 @@
  * @property {import('./notes.js').LabelMode} labels
  * @property {number} octaves
  * @property {boolean} sound
- * @property {'keyboard' | 'exercises'} view
+ * @property {'keyboard' | 'exercises' | 'library'} view
  * @property {import('./exercise.js').ExerciseOptions} exercise
  */
 
