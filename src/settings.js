@@ -7,7 +7,7 @@
  * @property {boolean} midi  MIDI access was granted before, so it reconnects on start
  * @property {'keyboard' | 'exercises' | 'library'} view
  * @property {import('./exercise.js').ExerciseOptions} exercise
- * @property {{ hand: import('./practice.js').HandChoice, mode: 'wait' | 'realtime', speed: number, showKeys: boolean }} practice
+ * @property {{ hand: import('./practice.js').HandChoice, mode: 'wait' | 'realtime', speed: number, showKeys: boolean, accompany: boolean }} practice
  * @property {import('./streak.js').Streak | null} streak
  */
 
@@ -21,7 +21,7 @@ const DEFAULTS = {
   midi: false,
   view: 'keyboard',
   exercise: { clef: 'treble', level: 'staff', accidentals: false, mode: 'single', exactOctave: true },
-  practice: { hand: 'right', mode: 'wait', speed: 0.75, showKeys: true },
+  practice: { hand: 'right', mode: 'wait', speed: 0.75, showKeys: true, accompany: true },
   streak: null,
 };
 

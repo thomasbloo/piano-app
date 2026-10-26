@@ -24,7 +24,9 @@ export function readSteps(osmd) {
         length: note.Length.RealValue,
       });
     }
-    if (notes.length) steps.push({ cursor: position, time: cursor.Iterator.currentTimeStamp.RealValue, notes });
+    if (notes.length) {
+      steps.push({ cursor: position, time: cursor.Iterator.currentTimeStamp.RealValue, measure: cursor.Iterator.CurrentMeasureIndex, notes });
+    }
     cursor.next();
   }
   cursor.reset();

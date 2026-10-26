@@ -1,5 +1,5 @@
 import { click, startNote, stopNote } from './audio.js';
-import { RealtimeSession, WaitSession, practiceSteps } from './practice.js';
+import { RealtimeSession, WaitSession, inPassage, practiceSteps } from './practice.js';
 import { readSteps, scoreTempo } from './score-steps.js';
 
 /** How long the "Bravo !" or "Oups" badge stays on the score, in ms. */
@@ -27,6 +27,13 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
   const ring = $('pr-ring');
   const percent = $('pr-percent');
   const progress = $('pr-progress');
+  const otherButton = $('pr-other');
+  const listenButton = $('pr-listen');
+  const listenText = $('pr-listen-text');
+  const passageButton = $('pr-passage');
+  const passageText = $('pr-passage-text');
+  const passageClear = $('pr-passage-clear');
+  const scoreBox = $('score');
 
   const options = settings.practice;
   speedSelect.value = String(options.speed);
@@ -35,6 +42,8 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
     for (const b of handButtons) b.setAttribute('aria-pressed', String(b.dataset.hand === options.hand));
     for (const b of modeButtons) b.setAttribute('aria-pressed', String(b.dataset.mode === options.mode));
     keysButton.setAttribute('aria-pressed', String(options.showKeys));
+    otherButton.setAttribute('aria-pressed', String(options.accompany));
+    otherButton.hidden = options.hand === 'both';
   }
   showOptions();
 
@@ -45,6 +54,12 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
   let cursorPosition = 0;
   /** @type {WaitSession | RealtimeSession | null} */
   let session = null;
+  /** True while the app plays the piece for the player to hear. */
+  let listening = false;
+  /** Bars to practise, indexes from 0; null for the whole piece. @type {{ first: number, last: number } | null} */
+  let passage = null;
+  /** While choosing a passage: 'first' waits for the first bar, 'last' for the last one. @type {'first' | 'last' | null} */
+  let picking = null;
   let startedAt = 0;
   let frame = 0;
   /** @type {ReturnType<typeof setTimeout>[]} */
@@ -76,6 +91,11 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
   for (const b of handButtons) b.addEventListener('click', () => { options.hand = /** @type {any} */ (b.dataset.hand); changed(); });
   for (const b of modeButtons) b.addEventListener('click', () => { options.mode = /** @type {any} */ (b.dataset.mode); changed(); });
   speedSelect.addEventListener('change', () => { options.speed = Number(speedSelect.value); changed(); });
+  otherButton.addEventListener('click', () => {
+    options.accompany = !options.accompany;
+    save();
+    showOptions();
+  });
 
   /** @param {'correct' | 'wrong'} kind */
   function showToast(kind) {
@@ -98,15 +118,115 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
     ring.setAttribute('stroke-dasharray', `${value} 100`);
     percent.textContent = `${value}%`;
     const bars = osmd?.Sheet?.SourceMeasures?.length ?? 0;
-    const bar = done >= 1 ? bars : session && osmd ? osmd.cursor.Iterator.CurrentMeasureIndex + 1 : 1;
+    const bar = done >= 1 ? bars : (session || listening) && osmd ? osmd.cursor.Iterator.CurrentMeasureIndex + 1 : 1;
     progress.textContent = [
-      osmd?.Sheet?.ComposerString,
       bars ? `mesure ${Math.min(bar, bars)} sur ${bars}` : '',
       inARow > 1 ? `${inARow} justes d'affilée` : '',
     ].filter(Boolean).join(' · ');
   }
 
   startButton.addEventListener('click', () => (session ? stop() : start()));
+  listenButton.addEventListener('click', () => (listening ? stop() : listen()));
+
+  // Choosing a passage: tap the button, then the first bar and the last bar on the score.
+  passageButton.addEventListener('click', () => {
+    stop();
+    picking = picking ? null : 'first';
+    if (picking) passage = null;
+    showPassage();
+  });
+  passageClear.addEventListener('click', () => {
+    stop();
+    picking = null;
+    passage = null;
+    showPassage();
+    showProgress(0);
+  });
+  scoreBox.addEventListener('click', (event) => {
+    if (!picking || !osmd) return;
+    const bar = measureAt(event.clientX, event.clientY);
+    if (bar === null) return;
+    if (picking === 'first') {
+      passage = { first: bar, last: bar };
+      picking = 'last';
+    } else if (passage) {
+      passage = { first: Math.min(passage.first, bar), last: Math.max(passage.first, bar) };
+      picking = null;
+    }
+    showPassage();
+    showProgress(0);
+  });
+  // The score is laid out again when the window changes size: follow it.
+  window.addEventListener('resize', () => setTimeout(drawPassage, 300));
+
+  /** Size of an OSMD unit on screen, in pixels. */
+  const unit = () => 10 * (osmd?.zoom ?? 1);
+
+  /** Box of a bar across all staves, in OSMD units. @param {number} index */
+  function measureBox(index) {
+    const staves = (osmd.GraphicSheet.MeasureList[index] ?? []).filter(Boolean);
+    if (!staves.length) return null;
+    /** @type {{ left: number, right: number, y: number }[]} */
+    const boxes = staves.map((/** @type {any} */ m) => {
+      const { AbsolutePosition: at, BorderLeft, BorderRight } = m.PositionAndShape;
+      return { left: at.x + BorderLeft, right: at.x + BorderRight, y: at.y };
+    });
+    // A staff is 4 units high from its top line; leave a little room for notes just outside it.
+    return {
+      left: Math.min(...boxes.map((b) => b.left)),
+      right: Math.max(...boxes.map((b) => b.right)),
+      top: Math.min(...boxes.map((b) => b.y)) - 2,
+      bottom: Math.max(...boxes.map((b) => b.y)) + 6,
+    };
+  }
+
+  /** Index of the bar under a point of the screen, or null. @param {number} clientX @param {number} clientY */
+  function measureAt(clientX, clientY) {
+    const svg = scoreBox.querySelector('svg');
+    if (!svg) return null;
+    const rect = svg.getBoundingClientRect();
+    const x = (clientX - rect.left) / unit();
+    const y = (clientY - rect.top) / unit();
+    const count = osmd.GraphicSheet.MeasureList.length;
+    for (let i = 0; i < count; i++) {
+      const box = measureBox(i);
+      if (box && x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) return i;
+    }
+    return null;
+  }
+
+  /** Shade the bars of the passage on the score. */
+  function drawPassage() {
+    scoreBox.querySelectorAll('.passage-mark').forEach((el) => el.remove());
+    const svg = scoreBox.querySelector('svg');
+    if (!passage || !osmd || !svg) return;
+    const rect = svg.getBoundingClientRect();
+    const boxRect = scoreBox.getBoundingClientRect();
+    const offsetX = rect.left - boxRect.left + scoreBox.scrollLeft;
+    const offsetY = rect.top - boxRect.top + scoreBox.scrollTop;
+    for (let i = passage.first; i <= passage.last; i++) {
+      const box = measureBox(i);
+      if (!box) continue;
+      const mark = document.createElement('div');
+      mark.className = 'passage-mark';
+      mark.style.left = `${offsetX + box.left * unit()}px`;
+      mark.style.top = `${offsetY + box.top * unit()}px`;
+      mark.style.width = `${(box.right - box.left) * unit()}px`;
+      mark.style.height = `${(box.bottom - box.top) * unit()}px`;
+      scoreBox.append(mark);
+    }
+  }
+
+  function showPassage() {
+    scoreBox.classList.toggle('picking', !!picking);
+    passageButton.setAttribute('aria-pressed', String(!!picking));
+    passageClear.hidden = !passage || !!picking;
+    if (picking === 'first') passageText.textContent = 'Touchez la première mesure';
+    else if (picking === 'last') passageText.textContent = 'Touchez la dernière mesure';
+    else if (passage) passageText.textContent = passage.first === passage.last ? `Mesure ${passage.first + 1}` : `Mesures ${passage.first + 1} à ${passage.last + 1}`;
+    else passageText.textContent = 'Tout le morceau';
+    drawPassage();
+  }
 
   /** @param {number} position */
   function moveCursor(position) {
@@ -134,6 +254,7 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
 
   /** Play the other hand's notes for as long as they last. @param {import('./practice.js').StepNote[]} notes @param {number} delay seconds */
   function accompany(notes, delay = 0) {
+    if (!options.accompany) return;
     const spw = secondsPerWhole();
     for (const note of notes) {
       timers.push(setTimeout(() => startNote(note.midi, 70), delay * 1000));
@@ -141,9 +262,57 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
     }
   }
 
+  /** Steps of the passage, or of the whole piece, split for the chosen hand. */
+  function playableSteps() {
+    return practiceSteps(inPassage(steps, passage), options.hand);
+  }
+
+  function prepareCursor() {
+    picking = null;
+    showPassage();
+    osmd.cursor.reset();
+    cursorPosition = 0;
+    osmd.cursor.show();
+  }
+
+  /** Play the passage or the piece at tempo, for the player to hear how it goes. */
+  function listen() {
+    if (!osmd || !steps.length) return;
+    stop();
+    const playable = playableSteps();
+    if (!playable.length) return;
+    listening = true;
+    listenText.textContent = 'Arrêter';
+    listenButton.classList.add('playing');
+    prepareCursor();
+    feedback.textContent = '';
+    const spw = secondsPerWhole();
+    const first = playable[0].time;
+    let end = 0;
+    for (const step of playable) {
+      const at = (step.time - first) * spw;
+      timers.push(setTimeout(() => {
+        moveCursor(step.cursor);
+        showKeys(step.notes);
+        showProgress(at / Math.max(end, 0.001));
+        for (const note of step.notes) {
+          startNote(note.midi, 90);
+          timers.push(setTimeout(() => stopNote(note.midi), note.length * spw * 950));
+        }
+        accompany(step.accompaniment);
+      }, at * 1000));
+      end = Math.max(end, at + Math.max(0, ...[...step.notes, ...step.accompaniment].map((n) => n.length)) * spw);
+    }
+    timers.push(setTimeout(() => {
+      stop();
+      showProgress(1);
+    }, end * 1000 + 200));
+  }
+
   function start() {
     if (!osmd || !steps.length) return;
-    const playable = practiceSteps(steps, options.hand);
+    stop();
+    const playable = playableSteps();
     if (!playable.some((s) => s.notes.length)) {
       feedback.textContent = options.hand === 'left' ? "Cette partition n'a pas de main gauche." : 'Rien à jouer pour cette main.';
       return;
@@ -151,9 +320,7 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
     startText.textContent = 'Arrêter';
     startButton.classList.add('playing');
     inARow = 0;
-    osmd.cursor.reset();
-    cursorPosition = 0;
-    osmd.cursor.show();
+    prepareCursor();
 
     if (options.mode === 'wait') {
       const wait = new WaitSession(playable);
@@ -208,6 +375,9 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
     timers.forEach(clearTimeout);
     timers = [];
     session = null;
+    listening = false;
+    listenText.textContent = 'Écouter';
+    listenButton.classList.remove('playing');
     startText.textContent = 'Jouer';
     startButton.classList.remove('playing');
     showKeys([]);
@@ -220,6 +390,9 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
       stop();
       osmd = instance;
       steps = readSteps(osmd);
+      passage = null;
+      picking = null;
+      showPassage();
       feedback.textContent = '';
       showProgress(0);
       onRangeChange();

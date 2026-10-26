@@ -147,15 +147,17 @@
               <button type="button" class="icon-btn" data-mode="realtime" aria-label="Temps réel" title="Temps réel">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l3 2M10 2h4" /></svg>
               </button>
-              <select id="pr-speed" aria-label="Vitesse">
-                <option value="0.5">50 %</option>
-                <option value="0.75">75 %</option>
-                <option value="1">100 %</option>
-              </select>
               <button type="button" id="pr-keys" class="icon-btn hint-btn" aria-label="Montrer la prochaine touche" title="Montrer la prochaine touche">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></svg>
               </button>
+              <button type="button" id="pr-other" class="icon-btn" aria-label="Jouer l'autre main automatiquement" title="Jouer l'autre main automatiquement">
+                <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12" /><circle cx="6.5" cy="18" r="2.5" /><circle cx="16.5" cy="16" r="2.5" /></svg>
+              </button>
             </div>
+            <button type="button" id="pr-listen" class="listen">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" /><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /></svg>
+              <span id="pr-listen-text">Écouter</span>
+            </button>
             <button type="button" id="pr-start" class="play">
               <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z" /></svg>
               <span id="pr-start-text">Jouer</span>
@@ -163,6 +165,20 @@
           </div>
           <div class="score-wrap">
             <div id="score" class="score-box"></div>
+            <div class="score-tools">
+              <button type="button" id="pr-passage" class="score-chip">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 4v16M20 4v16M8 12h8M11 9l-3 3 3 3M13 9l3 3-3 3" /></svg>
+                <span id="pr-passage-text">Tout le morceau</span>
+              </button>
+              <button type="button" id="pr-passage-clear" class="score-chip" aria-label="Revenir au morceau entier" hidden>
+                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+              <select id="pr-speed" class="score-chip" aria-label="Vitesse">
+                <option value="0.5">Vitesse 50 %</option>
+                <option value="0.75">Vitesse 75 %</option>
+                <option value="1">Vitesse 100 %</option>
+              </select>
+            </div>
             <p id="pr-toast" class="toast" aria-hidden="true"></p>
             <p id="pr-feedback" class="feedback score-message" aria-live="polite"></p>
           </div>
