@@ -11,7 +11,13 @@
   </head>
   <body>
     <header class="topbar">
-      <h1>Piano</h1>
+      <div class="title-row">
+        <h1>Piano</h1>
+        <nav class="tabs" aria-label="Volets">
+          <button type="button" data-view="keyboard">Clavier libre</button>
+          <button type="button" data-view="exercises">Exercices</button>
+        </nav>
+      </div>
       <div class="controls">
         <label>
           Noms des notes
@@ -36,7 +42,45 @@
       <p id="midi-status" class="status"></p>
     </header>
     <main>
-      <p class="last-note">Dernière note : <strong id="last-note">–</strong></p>
+      <section id="view-keyboard" class="view">
+        <p class="last-note">Dernière note : <strong id="last-note">–</strong></p>
+      </section>
+
+      <section id="view-exercises" class="view">
+        <div class="controls">
+          <label>
+            Clé
+            <select id="ex-clef">
+              <option value="treble">Sol</option>
+              <option value="bass">Fa</option>
+              <option value="both">Sol et fa</option>
+            </select>
+          </label>
+          <label>
+            Notes
+            <select id="ex-level">
+              <option value="staff">Sur la portée</option>
+              <option value="ledger">Avec lignes supplémentaires</option>
+            </select>
+          </label>
+          <label>
+            Exercice
+            <select id="ex-mode">
+              <option value="single">Une note</option>
+              <option value="sequence">Suite de 8 notes</option>
+            </select>
+          </label>
+          <label class="check"><input type="checkbox" id="ex-accidentals" /> Dièses</label>
+          <label class="check"><input type="checkbox" id="ex-octave" /> Octave exacte</label>
+        </div>
+        <div id="staff" class="staff-box"></div>
+        <p id="ex-feedback" class="feedback" aria-live="polite">Jouez la note affichée.</p>
+        <div class="ex-footer">
+          <p id="ex-stats" class="status"></p>
+          <button id="ex-skip" type="button">Passer</button>
+        </div>
+      </section>
+
       <div id="keyboard" class="keyboard-scroll"></div>
     </main>
     <script type="module" src="src/main.js"></script>

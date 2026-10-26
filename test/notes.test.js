@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { frequency, isBlack, keyboardRange, noteName } from '../src/notes.js';
+import { coverRange, frequency, isBlack, keyboardRange, noteName } from '../src/notes.js';
 
 test('names middle C in both notations', () => {
   assert.equal(noteName(60, 'letters', true), 'C4');
@@ -23,4 +23,10 @@ test('centres ranges on middle C', () => {
   assert.deepEqual(keyboardRange(2), { low: 48, high: 72 });
   assert.deepEqual(keyboardRange(3), { low: 48, high: 84 });
   assert.deepEqual(keyboardRange(7), { low: 21, high: 108 });
+});
+
+test('widens a keyboard range to whole octaves', () => {
+  assert.deepEqual(coverRange({ low: 48, high: 72 }, 36, 84), { low: 36, high: 84 });
+  assert.deepEqual(coverRange({ low: 48, high: 84 }, 57, 77), { low: 48, high: 84 });
+  assert.deepEqual(coverRange({ low: 48, high: 72 }, 43, 64), { low: 36, high: 72 });
 });

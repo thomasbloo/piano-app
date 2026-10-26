@@ -1,10 +1,12 @@
 import { startNote, stopNote } from './audio.js';
+import { createExerciseView } from './exercise-view.js';
 import { Keyboard } from './keyboard.js';
 import { connectMidi, midiSupported } from './midi.js';
-import { keyboardRange, noteName } from './notes.js';
+import { coverRange, keyboardRange, noteName } from './notes.js';
 import { loadSettings, saveSettings } from './settings.js';
 
 const settings = loadSettings();
+const save = () => saveSettings(settings);
 /** @template {HTMLElement} T @param {string} id @returns {T} */
 const $ = (id) => /** @type {T} */ (document.getElementById(id));
 
@@ -23,11 +25,20 @@ soundCheck.checked = settings.sound;
 function noteOn(midi, velocity = 100) {
   if (settings.sound) startNote(midi, velocity);
   lastNote.textContent = `${noteName(midi, 'letters', true)} · ${noteName(midi, 'solfege', true)}`;
+  if (settings.view === 'exercises') exercises.play(midi);
 }
 
 /** @param {number} midi */
 function noteOff(midi) {
   stopNote(midi);
+}
+
+/** The chosen keyboard size, widened in the exercises so every note asked can be played. */
+function currentRange() {
+  const range = keyboardRange(settings.octaves);
+  if (settings.view !== 'exercises') return range;
+  const needed = exercises.range();
+  return coverRange(range, needed.low, needed.high);
 }
 
 const keyboard = new Keyboard($('keyboard'), {
@@ -37,21 +48,45 @@ const keyboard = new Keyboard($('keyboard'), {
   onNoteOff: noteOff,
 });
 
+const exercises = createExerciseView({
+  settings,
+  save,
+  keyboard,
+  onRangeChange: () => keyboard.update(currentRange()),
+});
+
+/** @param {'keyboard' | 'exercises'} view */
+function showView(view) {
+  settings.view = view;
+  save();
+  for (const button of document.querySelectorAll('.tabs button')) {
+    button.setAttribute('aria-current', String(/** @type {HTMLElement} */ (button).dataset.view === view));
+  }
+  $('view-keyboard').hidden = view !== 'keyboard';
+  $('view-exercises').hidden = view !== 'exercises';
+  keyboard.update(currentRange());
+}
+
+for (const button of document.querySelectorAll('.tabs button')) {
+  button.addEventListener('click', () => showView(/** @type {any} */ (/** @type {HTMLElement} */ (button).dataset.view)));
+}
+showView(settings.view);
+
 labelsSelect.addEventListener('change', () => {
   settings.labels = /** @type {import('./notes.js').LabelMode} */ (labelsSelect.value);
-  saveSettings(settings);
+  save();
   keyboard.update({ labels: settings.labels });
 });
 
 octavesSelect.addEventListener('change', () => {
   settings.octaves = Number(octavesSelect.value);
-  saveSettings(settings);
-  keyboard.update(keyboardRange(settings.octaves));
+  save();
+  keyboard.update(currentRange());
 });
 
 soundCheck.addEventListener('change', () => {
   settings.sound = soundCheck.checked;
-  saveSettings(settings);
+  save();
 });
 
 if (!midiSupported()) {

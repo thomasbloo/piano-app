@@ -41,3 +41,15 @@ export function keyboardRange(octaves) {
   const low = 60 - 12 * Math.floor(octaves / 2);
   return { low, high: low + 12 * octaves };
 }
+
+/**
+ * Widen a keyboard range, a whole octave at a time, so it includes low..high.
+ * @param {{ low: number, high: number }} range
+ * @param {number} low
+ * @param {number} high
+ */
+export function coverRange(range, low, high) {
+  const lowC = low - (low % 12);
+  const highC = high % 12 === 0 ? high : high + 12 - (high % 12);
+  return { low: Math.min(range.low, lowC), high: Math.max(range.high, highC) };
+}
