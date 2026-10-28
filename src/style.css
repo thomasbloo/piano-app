@@ -357,3 +357,52 @@ button.listen {
 }
 button.listen.playing { background: var(--raised); border-color: var(--pressed); }
 .icon-btn[hidden] { display: none; }
+
+/* Scales: two rows of options, the scale's name, the staff with the fingers, then the tips. */
+#view-scales { display: flex; flex-direction: column; }
+#view-scales[hidden] { display: none; }
+#view-scales .practice-bar { margin: 2px 0 6px; }
+#view-scales .card select { height: 44px; min-height: 44px; }
+.scale-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 4px 6px; }
+.scale-head h2 { margin: 0; font-size: 1.1rem; font-weight: 800; }
+.scale-head p { margin: 0; font-size: 0.85rem; color: var(--muted); font-weight: 700; }
+.scale-box { justify-content: flex-start; padding: 6px 8px; }
+.scale-box .scale-staff { height: 100%; width: auto; max-width: none; margin: 0 auto; }
+.scale-staff .cursor { fill: rgb(255 209 102 / 0.45); }
+.scale-staff .finger { font: 800 15px Nunito, sans-serif; }
+.scale-staff .finger.right { fill: #c25e08; }
+.scale-staff .finger.left { fill: #2f6fd6; }
+.scale-staff .shift { fill: none; stroke-width: 1.6; }
+.scale-staff .shift.right { stroke: #c25e08; }
+.scale-staff .shift.left { stroke: #2f6fd6; }
+.scale-staff .note.correct { color: var(--correct); }
+.scale-staff .note.wrong { color: var(--wrong); }
+.scale-tips { display: flex; flex-wrap: wrap; gap: 2px 16px; margin: 6px 4px 0; font-size: 0.85rem; font-weight: 700; }
+.scale-tips .tip.right { color: var(--right); }
+.scale-tips .tip.left { color: var(--left); }
+#view-scales .feedback { margin: 4px 0 0; }
+
+/* Finger to play a key with, in a small badge above its name. */
+.key.expected[data-finger]::before {
+  content: attr(data-finger);
+  position: absolute;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #14132a;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+  pointer-events: none;
+}
+.key.white { position: relative; }
+.key.black.expected[data-finger]::before { bottom: 22px; width: 16px; height: 16px; line-height: 16px; font-size: 0.65rem; background: #fff; color: #14132a; }
+#view-scales .card { flex-wrap: wrap; }
+@media (max-width: 520px) {
+  .tabs button { padding: 0 10px; font-size: 0.9rem; }
+}

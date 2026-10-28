@@ -15,6 +15,8 @@ export class Keyboard {
   #keys = new Map();
   #root;
   #options;
+  /** @type {{ midi: number, hand: 'right' | 'left', name?: string, finger?: number }[]} */
+  #expected = [];
 
   /**
    * @param {HTMLElement} root
@@ -39,14 +41,21 @@ export class Keyboard {
 
   /**
    * Tint the keys to play next in their hand's colour and name them, as a hint while playing a score.
-   * @param {{ midi: number, hand: 'right' | 'left' }[]} notes
+   * A note can bring its own spelling (B♭ rather than A♯) and the finger to play it with.
+   * The keys stay tinted when the keyboard is redrawn.
+   * @param {{ midi: number, hand: 'right' | 'left', name?: string, finger?: number }[]} notes
    */
   setExpected(notes) {
+    this.#expected = notes;
     for (const [midi, key] of this.#keys) {
-      const hand = notes.find((n) => n.midi === midi)?.hand;
+      const note = notes.find((n) => n.midi === midi);
+      const hand = note?.hand;
       key.classList.toggle('expected', !!hand);
       key.classList.toggle('expected-right', hand === 'right');
       key.classList.toggle('expected-left', hand === 'left');
+      key.dataset.name = note?.name ?? key.dataset.defaultName;
+      if (note?.finger) key.dataset.finger = String(note.finger);
+      else delete key.dataset.finger;
     }
   }
 
@@ -90,13 +99,15 @@ export class Keyboard {
         key.append(label);
       }
       key.setAttribute('aria-label', noteName(midi, 'letters', true));
-      key.dataset.name = noteName(midi, labels === 'solfege' ? 'solfege' : 'letters');
+      key.dataset.defaultName = noteName(midi, labels === 'solfege' ? 'solfege' : 'letters');
+      key.dataset.name = key.dataset.defaultName;
       this.#bindPointer(key, midi);
       this.#keys.set(midi, key);
       board.append(key);
     }
     board.style.setProperty('--white-count', String(whiteCount));
     this.#root.append(board);
+    this.setExpected(this.#expected);
     this.#keys.get(60)?.scrollIntoView({ inline: 'center', block: 'nearest' });
   }
 
