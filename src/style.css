@@ -252,14 +252,13 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 0
 #lib-viewer[hidden] { display: none; }
 .score-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .score-box { flex: 1; min-height: 0; background: var(--score-bg); border-radius: 20px; overflow: auto; }
-.score-message { margin: 4px 0 0; min-height: 1.3em; font-size: 0.95rem; }
-.score-message:empty { display: none; }
+/* Under the score: passage and speed on the left, then the message, so nothing hides the notes. */
+.score-footer { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.score-message { flex: 1; min-width: 0; margin: 0; min-height: 0; font-size: 0.95rem; }
 
 /* "Bravo !" or "Oups" for a moment after each note. */
 .toast {
-  position: absolute;
-  top: 12px;
-  right: 16px;
+  flex: none;
   margin: 0;
   padding: 6px 14px;
   border-radius: 14px;
@@ -321,9 +320,9 @@ button.play:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--accen
 button.play.playing { background: var(--raised); color: var(--fg); box-shadow: 0 4px 0 var(--pressed); }
 button.play.playing svg { display: none; }
 
-/* Passage and speed, over the top left corner of the score. */
+/* Passage and speed, under the score. */
 .score-box { position: relative; }
-.score-tools { position: absolute; top: 10px; left: 12px; display: flex; gap: 6px; }
+.score-tools { display: flex; gap: 6px; flex: none; }
 .score-chip {
   display: flex;
   align-items: center;

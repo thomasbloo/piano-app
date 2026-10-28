@@ -166,18 +166,24 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
   function measureBox(index) {
     const staves = (osmd.GraphicSheet.MeasureList[index] ?? []).filter(Boolean);
     if (!staves.length) return null;
-    /** @type {{ left: number, right: number, y: number }[]} */
+    /** @type {{ left: number, right: number }[]} */
     const boxes = staves.map((/** @type {any} */ m) => {
       const { AbsolutePosition: at, BorderLeft, BorderRight } = m.PositionAndShape;
-      return { left: at.x + BorderLeft, right: at.x + BorderRight, y: at.y };
+      return { left: at.x + BorderLeft, right: at.x + BorderRight };
     });
-    // A staff is 4 units high from its top line; leave a little room for notes just outside it.
+    // Up and down, the bar reaches as far as the notes of its line, ledger lines included.
+    const line = lineExtent(staves[0].ParentMusicSystem);
     return {
       left: Math.min(...boxes.map((b) => b.left)),
       right: Math.max(...boxes.map((b) => b.right)),
-      top: Math.min(...boxes.map((b) => b.y)) - 2,
-      bottom: Math.max(...boxes.map((b) => b.y)) + 6,
+      ...line,
     };
+  }
+
+  /** Top and bottom of everything drawn on a line of the score, in OSMD units. @param {any} system */
+  function lineExtent(system) {
+    const { AbsolutePosition: at, BorderMarginTop, BorderMarginBottom } = system.PositionAndShape;
+    return { top: at.y + BorderMarginTop, bottom: at.y + BorderMarginBottom };
   }
 
   /** Index of the bar under a point of the screen, or null. @param {number} clientX @param {number} clientY */
@@ -241,14 +247,16 @@ export function createPracticeView({ settings, save, keyboard, onRangeChange, on
     keepLineAtTop();
   }
 
-  /** Space left above the current line for the passage and speed chips, in pixels. */
-  const TOP_ROOM = 52;
+  /** Space left above the highest note of the current line, in pixels. */
+  const TOP_ROOM = 8;
 
-  /** Scroll so the line being played sits at the top of the score and the next one shows in full below. */
+  /** Scroll so the line being played sits at the top of the score, high notes included, and the next one shows below. */
   function keepLineAtTop() {
-    const cursor = scoreBox.querySelector('[id^="cursorImg"]');
-    if (!cursor) return;
-    const top = cursor.getBoundingClientRect().top - scoreBox.getBoundingClientRect().top + scoreBox.scrollTop;
+    const svg = scoreBox.querySelector('svg');
+    const measure = osmd?.GraphicSheet.MeasureList[osmd.cursor.Iterator.CurrentMeasureIndex]?.find(Boolean);
+    if (!svg || !measure) return;
+    const svgTop = svg.getBoundingClientRect().top - scoreBox.getBoundingClientRect().top + scoreBox.scrollTop;
+    const top = svgTop + lineExtent(measure.ParentMusicSystem).top * unit();
     const target = Math.max(0, top - TOP_ROOM);
     if (Math.abs(target - scoreBox.scrollTop) > 8) scoreBox.scrollTo({ top: target, behavior: 'smooth' });
   }

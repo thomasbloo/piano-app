@@ -239,22 +239,24 @@
           </div>
           <div class="score-wrap">
             <div id="score" class="score-box"></div>
-            <div class="score-tools">
-              <button type="button" id="pr-passage" class="score-chip">
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 4v16M20 4v16M8 12h8M11 9l-3 3 3 3M13 9l3 3-3 3" /></svg>
-                <span id="pr-passage-text">Tout le morceau</span>
-              </button>
-              <button type="button" id="pr-passage-clear" class="score-chip" aria-label="Revenir au morceau entier" hidden>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
-              </button>
-              <select id="pr-speed" class="score-chip" aria-label="Vitesse">
-                <option value="0.5">Vitesse 50 %</option>
-                <option value="0.75">Vitesse 75 %</option>
-                <option value="1">Vitesse 100 %</option>
-              </select>
+            <div class="score-footer">
+              <div class="score-tools">
+                <button type="button" id="pr-passage" class="score-chip">
+                  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 4v16M20 4v16M8 12h8M11 9l-3 3 3 3M13 9l3 3-3 3" /></svg>
+                  <span id="pr-passage-text">Tout le morceau</span>
+                </button>
+                <button type="button" id="pr-passage-clear" class="score-chip" aria-label="Revenir au morceau entier" hidden>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                </button>
+                <select id="pr-speed" class="score-chip" aria-label="Vitesse">
+                  <option value="0.5">Vitesse 50 %</option>
+                  <option value="0.75">Vitesse 75 %</option>
+                  <option value="1">Vitesse 100 %</option>
+                </select>
+              </div>
+              <p id="pr-feedback" class="feedback score-message" aria-live="polite"></p>
+              <p id="pr-toast" class="toast" aria-hidden="true"></p>
             </div>
-            <p id="pr-toast" class="toast" aria-hidden="true"></p>
-            <p id="pr-feedback" class="feedback score-message" aria-live="polite"></p>
           </div>
         </div>
         <p id="lib-status" class="status" aria-live="polite"></p>
