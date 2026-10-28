@@ -15,6 +15,7 @@
         <nav class="tabs" aria-label="Volets">
           <button type="button" data-view="keyboard">Clavier</button>
           <button type="button" data-view="exercises">Exercices</button>
+          <button type="button" data-view="scales">Gammes</button>
           <button type="button" data-view="library">Partitions</button>
         </nav>
         <div class="spacer"></div>
@@ -95,6 +96,79 @@
           <p id="ex-stats" class="status"></p>
           <button id="ex-skip" type="button">Passer</button>
         </div>
+      </section>
+
+      <section id="view-scales" class="view">
+        <div class="practice-bar">
+          <div class="card">
+            <select id="sc-tonic" aria-label="Tonique"></select>
+            <select id="sc-type" aria-label="Type de gamme">
+              <option value="major">Majeure</option>
+              <option value="natural">Mineure nat.</option>
+              <option value="harmonic">Mineure harm.</option>
+              <option value="melodic">Mineure mél.</option>
+              <option value="chromatic">Chromatique</option>
+            </select>
+            <select id="sc-octaves" aria-label="Étendue">
+              <option value="1">1 octave</option>
+              <option value="2">2 octaves</option>
+            </select>
+            <select id="sc-direction" aria-label="Sens">
+              <option value="updown">Aller-retour</option>
+              <option value="up">Montée</option>
+            </select>
+          </div>
+          <div class="card" role="group" aria-label="Main">
+            <button type="button" class="seg hand-right" data-sc-hand="right">Droite</button>
+            <button type="button" class="seg hand-left" data-sc-hand="left">Gauche</button>
+            <button type="button" class="seg" data-sc-hand="both" title="Les deux mains à une octave d'écart">Les deux</button>
+            <button type="button" class="seg" data-sc-hand="contrary" title="Mouvement contraire : les deux mains partent de la même note et s'écartent">Contraire</button>
+          </div>
+        </div>
+        <div class="practice-bar">
+          <div class="card">
+            <button type="button" class="icon-btn" data-sc-mode="wait" aria-label="Note par note" title="Note par note : l'app attend la bonne note">
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5v14M19 12H9M14 7l5 5-5 5" /></svg>
+            </button>
+            <button type="button" class="icon-btn" data-sc-mode="tempo" aria-label="Au tempo" title="Au tempo : le curseur avance avec le métronome, la régularité est notée">
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l3 2M10 2h4" /></svg>
+            </button>
+            <select id="sc-tempo" aria-label="Tempo"></select>
+            <select id="sc-per-beat" aria-label="Notes par temps" title="Notes par temps : noires (1), croches (2), doubles croches (4)">
+              <option value="1">Noires</option>
+              <option value="2">Croches</option>
+              <option value="4">Doubles</option>
+            </select>
+            <button type="button" id="sc-metronome" class="icon-btn" aria-label="Métronome" title="Métronome pendant la gamme">
+              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 18H5z" /><path d="M7.5 15h9M12 15l5-9" /></svg>
+            </button>
+            <button type="button" id="sc-fingers" class="icon-btn" aria-label="Doigtés" title="Montrer les doigtés">
+              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V5.5a1.5 1.5 0 0 1 3 0V13M17 9.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-1a6 6 0 0 1-5-2.7L4 15.5a1.6 1.6 0 0 1 2.5-2L8 15" /></svg>
+            </button>
+            <button type="button" id="sc-keys" class="icon-btn hint-btn" aria-label="Montrer les touches" title="Montrer les touches et les doigts sur le clavier">
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></svg>
+            </button>
+          </div>
+          <div class="card" role="group" aria-label="Noms des notes">
+            <button type="button" class="seg" data-notation="solfege">Do Ré Mi</button>
+            <button type="button" class="seg" data-notation="letters">C D E</button>
+          </div>
+          <button type="button" id="sc-listen" class="listen">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" /><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /></svg>
+            <span id="sc-listen-text">Écouter</span>
+          </button>
+          <button type="button" id="sc-start" class="play">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z" /></svg>
+            <span id="sc-start-text">Jouer</span>
+          </button>
+        </div>
+        <div class="scale-head">
+          <h2 id="sc-title"></h2>
+          <p id="sc-key"></p>
+        </div>
+        <div id="sc-staff" class="staff-box scale-box"></div>
+        <p id="sc-tips" class="scale-tips"></p>
+        <p id="sc-feedback" class="feedback" aria-live="polite"></p>
       </section>
 
       <section id="view-library" class="view">

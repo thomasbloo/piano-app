@@ -4,6 +4,7 @@ import { Keyboard } from './keyboard.js';
 import { createLibraryView } from './library-view.js';
 import { connectMidi, midiSupported } from './midi.js';
 import { createPracticeView } from './practice-view.js';
+import { createScalesView } from './scales-view.js';
 import { coverRange, keyboardRange, noteName } from './notes.js';
 import { loadSettings, saveSettings } from './settings.js';
 import { dayOf, practised, streakDays } from './streak.js';
@@ -64,6 +65,7 @@ function noteOn(midi, velocity = 100) {
   if (settings.sound) startNote(midi, velocity);
   lastNote.textContent = `${noteName(midi, 'letters', true)} · ${noteName(midi, 'solfege', true)}`;
   if (settings.view === 'exercises') exercises.play(midi);
+  if (settings.view === 'scales') scales.play(midi);
   if (settings.view === 'library') practice.play(midi);
 }
 
@@ -75,7 +77,10 @@ function noteOff(midi) {
 /** The chosen keyboard size, widened so every note of the exercise or the open score can be played. */
 function currentRange() {
   const range = keyboardRange(settings.octaves);
-  const needed = settings.view === 'exercises' ? exercises.range() : settings.view === 'library' ? practice.range() : null;
+  const needed = settings.view === 'exercises' ? exercises.range()
+    : settings.view === 'scales' ? scales.range()
+    : settings.view === 'library' ? practice.range()
+    : null;
   return needed ? coverRange(range, needed.low, needed.high) : range;
 }
 
@@ -102,9 +107,28 @@ const practice = createPracticeView({
   onRightNote: rightNote,
 });
 
+/** Note names on the keys, from the settings or the switch in the scales tab. @param {import('./notes.js').LabelMode} mode */
+function setLabels(mode) {
+  settings.labels = mode;
+  labelsSelect.value = mode;
+  save();
+  keyboard.update({ labels: mode });
+  scales.refresh();
+}
+
+const scales = createScalesView({
+  settings,
+  save,
+  keyboard,
+  onRangeChange: () => keyboard.update(currentRange()),
+  onRightNote: rightNote,
+  onLabelsChange: setLabels,
+});
+
 /** @param {import('./settings.js').Settings['view']} view */
 function showView(view) {
   if (view !== 'library') practice.stop();
+  if (view !== 'scales') scales.hide();
   settings.view = view;
   save();
   for (const button of document.querySelectorAll('.tabs button')) {
@@ -112,8 +136,10 @@ function showView(view) {
   }
   $('view-keyboard').hidden = view !== 'keyboard';
   $('view-exercises').hidden = view !== 'exercises';
+  $('view-scales').hidden = view !== 'scales';
   $('view-library').hidden = view !== 'library';
   keyboard.update(currentRange());
+  if (view === 'scales') scales.show();
 }
 
 createLibraryView({ onScoreOpened: (osmd) => practice.setScore(osmd), onScoreClosed: () => practice.stop() });
@@ -123,11 +149,7 @@ for (const button of document.querySelectorAll('.tabs button')) {
 }
 showView(settings.view);
 
-labelsSelect.addEventListener('change', () => {
-  settings.labels = /** @type {import('./notes.js').LabelMode} */ (labelsSelect.value);
-  save();
-  keyboard.update({ labels: settings.labels });
-});
+labelsSelect.addEventListener('change', () => setLabels(/** @type {import('./notes.js').LabelMode} */ (labelsSelect.value)));
 
 octavesSelect.addEventListener('change', () => {
   settings.octaves = Number(octavesSelect.value);
