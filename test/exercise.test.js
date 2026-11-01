@@ -77,3 +77,31 @@ test('a new note never repeats the one just answered', () => {
     assert.notEqual(session.current.midi, previous);
   }
 });
+
+test('progressive levels start on the lowest Do and add one note each', async () => {
+  const { stepOrder, stepCount, notePool } = await import('../src/exercise.js');
+  const seq = { ...base, mode: /** @type {const} */ ('sequence'), level: /** @type {const} */ ('ledger') };
+  assert.deepEqual(stepOrder('treble', seq).slice(0, 3), [60, 62, 64]);
+  assert.deepEqual(stepOrder('treble', seq).slice(-2), [59, 57]);
+  assert.deepEqual(stepOrder('bass', seq).slice(0, 2), [36, 38]);
+  assert.deepEqual(notePool('treble', { ...seq, step: 1 }), [60, 62]);
+  assert.deepEqual(notePool('treble', { ...seq, step: 2 }), [60, 62, 64]);
+  // The level after the last one would be the full random set.
+  const count = stepCount(seq);
+  assert.equal(notePool('treble', { ...seq, step: count }).length + 1, notePool('treble', { ...seq, step: 0 }).length);
+  // Sharps come after every natural note.
+  const withSharps = stepOrder('treble', { ...seq, accidentals: true });
+  const firstSharp = withSharps.findIndex(isBlack);
+  assert.ok(withSharps.slice(firstSharp).every(isBlack));
+  assert.equal(withSharps.length, RANGES.treble.ledger[1] - RANGES.treble.ledger[0] + 1);
+  // Single-note mode ignores the level.
+  assert.equal(notePool('treble', { ...seq, mode: 'single', step: 1 }).length, notePool('treble', seq).length);
+});
+
+test('level 1 sequences use only its two notes', () => {
+  const session = new ExerciseSession({ ...base, mode: 'sequence', step: 1 }, seeded(3));
+  for (let i = 0; i < 20; i++) {
+    assert.ok(session.notes.every((n) => n.midi === 72 || n.midi === 74));
+    session.next();
+  }
+});

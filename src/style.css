@@ -204,6 +204,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 0
 #view-exercises { display: flex; flex-direction: column; }
 #view-exercises[hidden] { display: none; }
 #view-exercises > .controls { margin: 4px 0 8px; }
+#ex-step-label[hidden] { display: none; }
 
 #view-exercises > .controls, #lib-index .controls { padding: 10px 12px; border-radius: 18px; background: var(--surface); }
 .staff-box { flex: 1; min-height: 80px; display: flex; align-items: center; justify-content: center; overflow: auto; border-radius: 20px; background: var(--score-bg); color: #22203d; }
