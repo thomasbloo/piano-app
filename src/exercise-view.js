@@ -1,4 +1,4 @@
-import { ExerciseSession, exerciseRange } from './exercise.js';
+import { ExerciseSession, exerciseRange, notesAtStep, stepCount, stepOrder } from './exercise.js';
 import { noteName } from './notes.js';
 import { renderStaff } from './staff.js';
 
@@ -19,6 +19,8 @@ export function createExerciseView({ settings, save, keyboard, onRangeChange, on
   const clefSelect = /** @type {HTMLSelectElement} */ ($('ex-clef'));
   const levelSelect = /** @type {HTMLSelectElement} */ ($('ex-level'));
   const modeSelect = /** @type {HTMLSelectElement} */ ($('ex-mode'));
+  const stepSelect = /** @type {HTMLSelectElement} */ ($('ex-step'));
+  const stepLabel = $('ex-step-label');
   const accidentalsCheck = /** @type {HTMLInputElement} */ ($('ex-accidentals'));
   const octaveCheck = /** @type {HTMLInputElement} */ ($('ex-octave'));
   const staff = $('staff');
@@ -31,6 +33,7 @@ export function createExerciseView({ settings, save, keyboard, onRangeChange, on
   modeSelect.value = options.mode;
   accidentalsCheck.checked = options.accidentals;
   octaveCheck.checked = options.exactOctave;
+  fillSteps(options.step ?? 0);
 
   let session = new ExerciseSession(options);
   let waiting = false;
@@ -43,14 +46,46 @@ export function createExerciseView({ settings, save, keyboard, onRangeChange, on
       : '';
   }
 
-  function restart() {
-    settings.exercise = {
+  /** The options the controls show, with the level from the level menu. @returns {import('./exercise.js').ExerciseOptions} */
+  function readOptions() {
+    return {
       clef: /** @type {any} */ (clefSelect.value),
       level: /** @type {any} */ (levelSelect.value),
       mode: /** @type {any} */ (modeSelect.value),
       accidentals: accidentalsCheck.checked,
       exactOctave: octaveCheck.checked,
+      step: Number(stepSelect.value) || 0,
     };
+  }
+
+  /**
+   * Rebuild the level menu for the chosen clef, notes and sharps. Level 1 has two notes and each
+   * level adds one; "Aléatoire" is every note, so the menu stops one level before it.
+   * @param {number} wanted  Level to select, kept within the new number of levels.
+   */
+  function fillSteps(wanted) {
+    const opts = readOptions();
+    const count = stepCount(opts);
+    const names = settings.labels === 'letters' ? 'letters' : 'solfege';
+    const order = opts.clef === 'both' ? null : stepOrder(opts.clef, opts);
+    stepSelect.innerHTML = '';
+    stepSelect.add(new Option('Aléatoire', '0'));
+    for (let step = 1; step <= count; step++) {
+      let text = `Niveau ${step}`;
+      if (order) {
+        text += step === 1
+          ? ` : ${order.slice(0, 2).map((m) => noteName(m, names)).join(' ')}`
+          : ` : + ${noteName(order[notesAtStep(step) - 1], names)}`;
+      }
+      stepSelect.add(new Option(text, String(step)));
+    }
+    stepSelect.value = String(Math.min(wanted, count));
+    stepLabel.hidden = opts.mode !== 'sequence';
+  }
+
+  function restart() {
+    fillSteps(Number(stepSelect.value) || 0);
+    settings.exercise = readOptions();
     save();
     session = new ExerciseSession(settings.exercise);
     waiting = false;
@@ -60,7 +95,7 @@ export function createExerciseView({ settings, save, keyboard, onRangeChange, on
     draw();
   }
 
-  for (const input of [clefSelect, levelSelect, modeSelect, accidentalsCheck, octaveCheck]) {
+  for (const input of [clefSelect, levelSelect, modeSelect, stepSelect, accidentalsCheck, octaveCheck]) {
     input.addEventListener('change', restart);
   }
 
@@ -75,6 +110,9 @@ export function createExerciseView({ settings, save, keyboard, onRangeChange, on
   draw();
 
   return {
+    /** Redraw the level names after the note names setting changed. */
+    refresh: () => fillSteps(Number(stepSelect.value) || 0),
+
     /** Keyboard range the current exercise needs. */
     range: () => exerciseRange(settings.exercise),
 

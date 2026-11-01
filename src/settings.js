@@ -27,7 +27,7 @@ const DEFAULTS = {
   theme: 'dark',
   midi: false,
   view: 'keyboard',
-  exercise: { clef: 'treble', level: 'staff', accidentals: false, mode: 'single', exactOctave: true },
+  exercise: { clef: 'treble', level: 'staff', accidentals: false, mode: 'single', exactOctave: true, step: 0 },
   practice: { hand: 'right', mode: 'wait', speed: 0.75, showKeys: true, accompany: true },
   scales: {
     tonic: 0, type: 'major', hand: 'right', octaves: 1, direction: 'updown',

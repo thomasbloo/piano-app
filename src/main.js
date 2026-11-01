@@ -114,6 +114,7 @@ function setLabels(mode) {
   save();
   keyboard.update({ labels: mode });
   scales.refresh();
+  exercises.refresh();
 }
 
 const scales = createScalesView({

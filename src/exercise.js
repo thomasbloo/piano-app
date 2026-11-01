@@ -10,6 +10,7 @@ import { isBlack } from './notes.js';
  * @property {boolean} accidentals
  * @property {'single' | 'sequence'} mode
  * @property {boolean} exactOctave  When false, any octave of the right note counts.
+ * @property {number} [step]  Sequence mode only: progressive level (1 = two notes), or 0 for all notes at random.
  */
 
 /** Note ranges in MIDI numbers. Treble: E4–F5 or A3–C6. Bass: G2–A3 or C2–E4. */
@@ -31,17 +32,55 @@ export function exerciseRange(options) {
 }
 
 /**
+ * Order in which the progressive levels add notes, for one clef.
+ * Starts on the lowest Do (C) of the range and goes up note by note to the top; the notes below
+ * that Do come next, going down; sharps, when asked, come last in the same order.
+ * The whole list is exactly the notes of the random exercise.
+ * @param {Clef} clef
+ * @param {ExerciseOptions} options
+ */
+export function stepOrder(clef, options) {
+  const [low, high] = RANGES[clef][options.level];
+  let firstC = low;
+  while (firstC % 12 !== 0 && firstC <= high) firstC++;
+  if (firstC > high) firstC = low;
+  const ordered = [];
+  for (let midi = firstC; midi <= high; midi++) ordered.push(midi);
+  for (let midi = firstC - 1; midi >= low; midi--) ordered.push(midi);
+  const naturals = ordered.filter((m) => !isBlack(m));
+  return options.accidentals ? [...naturals, ...ordered.filter(isBlack)] : naturals;
+}
+
+/** Notes a level adds up to: level 1 has two notes, each level one more. */
+export const notesAtStep = (/** @type {number} */ step) => step + 1;
+
+/**
+ * Number of progressive levels before "all notes at random". The level after the last one would
+ * hold every note, which is the random exercise itself, so it is not listed twice.
+ * @param {ExerciseOptions} options
+ */
+export function stepCount(options) {
+  const clefs = options.clef === 'both' ? /** @type {Clef[]} */ (['treble', 'bass']) : [options.clef];
+  return Math.max(...clefs.map((c) => stepOrder(c, options).length)) - 2;
+}
+
+/** The notes an exercise can ask for on one clef. @param {Clef} clef @param {ExerciseOptions} options */
+export function notePool(clef, options) {
+  const all = stepOrder(clef, options);
+  const step = options.mode === 'sequence' ? options.step ?? 0 : 0;
+  return (step > 0 ? all.slice(0, notesAtStep(step)) : all).sort((a, b) => a - b);
+}
+
+/**
  * @param {Clef} clef
  * @param {ExerciseOptions} options
  * @param {() => number} rng
- * @param {number} [avoid]  Previous note, so the same note never comes twice in a row.
+ * @param {number} [avoid]  Previous note, so the same note never comes twice in a row
+ *   (except with only two notes, where that would just alternate them).
  */
 export function randomNote(clef, options, rng, avoid) {
-  const [low, high] = RANGES[clef][options.level];
-  const candidates = [];
-  for (let midi = low; midi <= high; midi++) {
-    if ((options.accidentals || !isBlack(midi)) && midi !== avoid) candidates.push(midi);
-  }
+  const pool = notePool(clef, options);
+  const candidates = pool.length > 2 ? pool.filter((m) => m !== avoid) : pool;
   return candidates[Math.floor(rng() * candidates.length)];
 }
 
