@@ -7,7 +7,7 @@ import { createPracticeView } from './practice-view.js';
 import { createScalesView } from './scales-view.js';
 import { coverRange, keyboardRange, noteName } from './notes.js';
 import { loadSettings, saveSettings } from './settings.js';
-import { dayOf, practised, streakDays } from './streak.js';
+import { createStreakView } from './streak-view.js';
 
 const settings = loadSettings();
 const save = () => saveSettings(settings);
@@ -43,22 +43,9 @@ settingsButton.addEventListener('click', () => {
   settingsButton.setAttribute('aria-expanded', String(!panel.hidden));
 });
 
-/** Days practised in a row, shown in the header. */
-function showStreak() {
-  const days = streakDays(settings.streak, dayOf(new Date()));
-  $('streak').hidden = days === 0;
-  $('streak-text').textContent = `Série de ${days} jour${days > 1 ? 's' : ''}`;
-}
-
-/** A right note in an exercise or a score counts today in the streak. */
-function rightNote() {
-  const streak = practised(settings.streak, dayOf(new Date()));
-  if (streak === settings.streak) return;
-  settings.streak = streak;
-  save();
-  showStreak();
-}
-showStreak();
+const streak = createStreakView({ settings, save });
+/** A right note in an exercise, a scale or a score counts today in the streak. */
+const rightNote = () => streak.rightNote();
 
 /** @param {number} midi @param {number} [velocity] */
 function noteOn(midi, velocity = 100) {
@@ -199,5 +186,5 @@ midiButton.addEventListener('click', () => void startMidi());
 if (settings.midi && midiSupported()) void startMidi();
 
 if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
-  void navigator.serviceWorker.register('sw.js');
+  void navigator.serviceWorker.register('sw.js', { type: 'module' });
 }

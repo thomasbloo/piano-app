@@ -10,6 +10,8 @@
  * @property {{ hand: import('./practice.js').HandChoice, mode: 'wait' | 'realtime', speed: number, showKeys: boolean, accompany: boolean }} practice
  * @property {ScaleSettings} scales
  * @property {import('./streak.js').Streak | null} streak
+ * @property {boolean} reminders  evening notification when the streak is not yet continued
+ * @property {string} [streakLostSeen]  last day of the broken streak already announced
  */
 
 /**
@@ -34,6 +36,7 @@ const DEFAULTS = {
     mode: 'wait', tempo: 60, perBeat: 2, metronome: true, fingers: true, showKeys: true,
   },
   streak: null,
+  reminders: false,
 };
 
 /** @returns {Settings} */
