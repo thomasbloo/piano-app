@@ -105,3 +105,28 @@ test('level 1 sequences use only its two notes', () => {
     session.next();
   }
 });
+
+test('every level asks for its new note at least twice per row, never twice in a row', async () => {
+  const { stepOrder, stepCount, newNotes, NEW_NOTE_MIN } = await import('../src/exercise.js');
+  for (const level of /** @type {const} */ (['staff', 'ledger'])) {
+    for (const accidentals of [false, true]) {
+      for (const clef of /** @type {const} */ (['treble', 'bass', 'both'])) {
+        const opts = { ...base, clef, level, accidentals, mode: /** @type {const} */ ('sequence') };
+        for (let step = 1; step <= stepCount(opts); step++) {
+          const session = new ExerciseSession({ ...opts, step }, seeded(step * 7 + 1));
+          for (let row = 0; row < 30; row++) {
+            const notes = session.notes.map((n) => n.midi);
+            const required = newNotes(session.clef, { ...opts, step });
+            if (clef !== 'both') assert.ok(required.length > 0);
+            if (step > 1 && required.length) assert.equal(required[0], stepOrder(session.clef, opts)[step]);
+            for (const note of required) {
+              assert.ok(notes.filter((m) => m === note).length >= NEW_NOTE_MIN, `level ${step}: ${notes}`);
+            }
+            if (step > 1) for (let i = 1; i < notes.length; i++) assert.notEqual(notes[i], notes[i - 1]);
+            session.next();
+          }
+        }
+      }
+    }
+  }
+});

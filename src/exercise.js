@@ -20,6 +20,8 @@ export const RANGES = {
 };
 
 export const SEQUENCE_LENGTH = 8;
+/** In a progressive level, each row asks for the note that level adds at least this many times. */
+export const NEW_NOTE_MIN = 2;
 /** After this many wrong answers on one note, the right key is shown. */
 export const HINT_AFTER = 2;
 
@@ -72,6 +74,48 @@ export function notePool(clef, options) {
 }
 
 /**
+ * The notes a progressive level must ask for in every row: the note it adds (level 1 adds two
+ * notes, Do and Ré, so both). Empty for the random exercise and outside sequence mode.
+ * @param {Clef} clef
+ * @param {ExerciseOptions} options
+ */
+export function newNotes(clef, options) {
+  const step = options.mode === 'sequence' ? options.step ?? 0 : 0;
+  if (step <= 0) return [];
+  const order = stepOrder(clef, options);
+  const count = notesAtStep(step);
+  // With "both" clefs one clef can run out of notes before the other: no new note on it then.
+  if (count > order.length) return [];
+  return step === 1 ? order.slice(0, 2) : [order[count - 1]];
+}
+
+/**
+ * Make sure each of `required` appears at least `min` times in `row`, by replacing random other
+ * notes, never next to the same note (unless the pool has only two notes, as in randomNote).
+ * @param {number[]} row  changed in place
+ * @param {number[]} required
+ * @param {number} min
+ * @param {() => number} rng
+ * @param {boolean} noRepeat  whether two equal notes in a row must be avoided
+ * @param {number} [before]  note shown just before the row
+ */
+export function ensureNotes(row, required, min, rng, noRepeat, before) {
+  for (const note of required) {
+    while (row.filter((m) => m === note).length < min) {
+      const free = row.flatMap((m, i) => {
+        if (m === note) return [];
+        // Keep at least `min` of every other required note.
+        if (required.includes(m) && row.filter((x) => x === m).length <= min) return [];
+        if (noRepeat && ((i > 0 ? row[i - 1] : before) === note || row[i + 1] === note)) return [];
+        return [i];
+      });
+      if (free.length === 0) break;
+      row[free[Math.floor(rng() * free.length)]] = note;
+    }
+  }
+}
+
+/**
  * @param {Clef} clef
  * @param {ExerciseOptions} options
  * @param {() => number} rng
@@ -121,13 +165,15 @@ export class ExerciseSession {
     const { clef, mode } = this.#options;
     this.clef = clef === 'both' ? (this.#rng() < 0.5 ? 'treble' : 'bass') : clef;
     const count = mode === 'sequence' ? SEQUENCE_LENGTH : 1;
-    /** @type {number | undefined} */
-    let previous = this.notes.at(-1)?.midi;
-    this.notes = [];
-    for (let i = 0; i < count; i++) {
-      previous = randomNote(this.clef, this.#options, this.#rng, previous);
-      this.notes.push({ midi: previous, state: i === 0 ? 'current' : 'pending' });
+    const before = this.notes.at(-1)?.midi;
+    /** @type {number[]} */
+    const row = [];
+    for (let i = 0; i < count; i++) row.push(randomNote(this.clef, this.#options, this.#rng, row.at(-1) ?? before));
+    if (mode === 'sequence') {
+      const noRepeat = notePool(this.clef, this.#options).length > 2;
+      ensureNotes(row, newNotes(this.clef, this.#options), NEW_NOTE_MIN, this.#rng, noRepeat, before);
     }
+    this.notes = row.map((midi, i) => ({ midi, state: i === 0 ? 'current' : 'pending' }));
     this.index = 0;
     this.mistakesOnCurrent = 0;
   }
