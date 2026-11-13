@@ -31,6 +31,8 @@ jobs:
       - run: npm test
       # The app needs no build: publish the files as they are, without the dev-only folders.
       - run: mkdir _site && cp -r index.html manifest.webmanifest sw.js icon.svg src fonts vendor scores _site/
+      # Lets an app left open notice a new version and reload itself (src/update.js).
+      - run: echo "${{ github.sha }}" > _site/version.txt
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

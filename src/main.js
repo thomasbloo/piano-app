@@ -8,6 +8,7 @@ import { createScalesView } from './scales-view.js';
 import { coverRange, keyboardRange, noteName } from './notes.js';
 import { loadSettings, saveSettings } from './settings.js';
 import { createStreakView } from './streak-view.js';
+import { watchForUpdates } from './update.js';
 
 const settings = loadSettings();
 const save = () => saveSettings(settings);
@@ -187,4 +188,5 @@ if (settings.midi && midiSupported()) void startMidi();
 
 if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
   void navigator.serviceWorker.register('sw.js', { type: 'module' });
+  watchForUpdates();
 }
