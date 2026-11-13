@@ -16,8 +16,11 @@ sw.addEventListener('activate', (/** @type {any} */ event) => event.waitUntil(sw
 
 sw.addEventListener('fetch', (/** @type {any} */ event) => {
   if (event.request.method !== 'GET') return;
+  // Same-origin files skip the browser's HTTP cache (GitHub Pages lets it keep files for
+  // 10 minutes), so a new version is never mixed with old files.
+  const sameOrigin = new URL(event.request.url).origin === sw.location.origin;
   event.respondWith(
-    fetch(event.request)
+    (sameOrigin ? fetch(event.request.url, { cache: 'no-cache' }) : fetch(event.request))
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE).then((cache) => cache.put(event.request, copy));
