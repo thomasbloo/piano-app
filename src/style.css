@@ -317,7 +317,32 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 0
 .lib-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 4px 0 8px; }
 .lib-actions h2 { margin: 0; font-size: 1.15rem; }
 .lib-actions label.button { align-self: flex-end; }
-#lib-list h2 { font-size: 1rem; color: var(--muted); margin: 12px 0 8px; }
+#lib-list h2 { font-size: 1rem; color: inherit; margin: 0; }
+.lib-section { margin-top: 10px; }
+.lib-section > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--raised);
+  cursor: pointer;
+  user-select: none;
+}
+.lib-section > summary::-webkit-details-marker { display: none; }
+.lib-section > summary::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 7px solid currentColor;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  transition: transform 0.15s;
+}
+.lib-section[open] > summary::before { transform: rotate(90deg); }
+.lib-count { margin-left: auto; font-size: 0.85rem; font-weight: 700; color: var(--muted); }
+.lib-section > .score-list { margin-top: 8px; }
 .score-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .score-list li { display: flex; gap: 8px; }
 .score-open {

@@ -9,6 +9,26 @@ import { deleteScore, getScore, listScores, saveScore } from './storage.js';
 /** @type {Promise<void> | null} */
 let osmdScript = null;
 
+const OPEN_KEY = 'piano.library.open';
+
+/** Which library sections are expanded. Both start collapsed. */
+function loadOpenSections() {
+  try {
+    return /** @type {Record<string, boolean>} */ (JSON.parse(localStorage.getItem(OPEN_KEY) ?? '{}'));
+  } catch {
+    return {};
+  }
+}
+
+/** @param {Record<string, boolean>} open */
+function saveOpenSections(open) {
+  try {
+    localStorage.setItem(OPEN_KEY, JSON.stringify(open));
+  } catch {
+    // Not remembered when storage is unavailable.
+  }
+}
+
 /** OpenSheetMusicDisplay is large, so it is only loaded when a score is first opened. */
 function loadOsmd() {
   osmdScript ??= new Promise((resolve, reject) => {
@@ -60,6 +80,7 @@ export function createLibraryView({ onScoreOpened, onScoreClosed }) {
 
   /** @type {any} */
   let osmd = null;
+  const openSections = loadOpenSections();
 
   async function refresh() {
     /** @type {LibraryEntry[]} */
@@ -86,15 +107,31 @@ export function createLibraryView({ onScoreOpened, onScoreClosed }) {
       empty.textContent = `Aucune partition de niveau « ${filter.value} ».`;
       list.append(empty);
     }
-    for (const [heading, entries] of /** @type {[string, LibraryEntry[]][]} */ ([['Morceaux inclus', builtIn], ['Mes partitions', imported]])) {
+    for (const [key, heading, entries] of /** @type {[string, string, LibraryEntry[]][]} */ ([
+      ['builtIn', 'Morceaux inclus', builtIn],
+      ['imported', 'Mes partitions', imported],
+    ])) {
       if (!entries.length) continue;
+      // Each section is a header you tap to show or hide its pieces; the choice is remembered.
+      const section = document.createElement('details');
+      section.className = 'lib-section';
+      section.open = !!openSections[key];
+      section.addEventListener('toggle', () => {
+        openSections[key] = section.open;
+        saveOpenSections(openSections);
+      });
+      const summary = document.createElement('summary');
       const h = document.createElement('h2');
       h.textContent = heading;
-      list.append(h);
+      const count = document.createElement('span');
+      count.className = 'lib-count';
+      count.textContent = String(entries.length);
+      summary.append(h, count);
       const ul = document.createElement('ul');
       ul.className = 'score-list';
       for (const entry of entries) ul.append(row(entry));
-      list.append(ul);
+      section.append(summary, ul);
+      list.append(section);
     }
   }
 
