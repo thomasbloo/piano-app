@@ -26,5 +26,180 @@
     "composer": "Ludwig van Beethoven",
     "level": "Débutant",
     "file": "scores/ode-a-la-joie.musicxml"
+  },
+  {
+    "id": "hot-cross-buns",
+    "title": "Hot Cross Buns",
+    "composer": "Traditionnel anglais",
+    "level": "Débutant",
+    "file": "scores/hot-cross-buns.musicxml"
+  },
+  {
+    "id": "mary-had-a-little-lamb",
+    "title": "Mary Had a Little Lamb",
+    "composer": "Traditionnel américain",
+    "level": "Débutant",
+    "file": "scores/mary-had-a-little-lamb.musicxml"
+  },
+  {
+    "id": "une-souris-verte",
+    "title": "Une souris verte",
+    "composer": "Traditionnel",
+    "level": "Débutant",
+    "file": "scores/une-souris-verte.musicxml"
+  },
+  {
+    "id": "pirouette-cacahuete",
+    "title": "Pirouette cacahuète",
+    "composer": "Traditionnel",
+    "level": "Débutant",
+    "file": "scores/pirouette-cacahuete.musicxml"
+  },
+  {
+    "id": "sur-le-pont-d-avignon",
+    "title": "Sur le pont d'Avignon",
+    "composer": "Traditionnel",
+    "level": "Débutant",
+    "file": "scores/sur-le-pont-d-avignon.musicxml"
+  },
+  {
+    "id": "j-ai-du-bon-tabac",
+    "title": "J'ai du bon tabac",
+    "composer": "Traditionnel",
+    "level": "Débutant",
+    "file": "scores/j-ai-du-bon-tabac.musicxml"
+  },
+  {
+    "id": "il-etait-un-petit-navire",
+    "title": "Il était un petit navire",
+    "composer": "Traditionnel",
+    "level": "Débutant",
+    "file": "scores/il-etait-un-petit-navire.musicxml"
+  },
+  {
+    "id": "ah-les-crocodiles",
+    "title": "Ah ! les crocodiles",
+    "composer": "Traditionnel",
+    "level": "Débutant",
+    "file": "scores/ah-les-crocodiles.musicxml"
+  },
+  {
+    "id": "alouette",
+    "title": "Alouette, gentille alouette",
+    "composer": "Traditionnel",
+    "level": "Débutant",
+    "file": "scores/alouette.musicxml"
+  },
+  {
+    "id": "vive-le-vent",
+    "title": "Vive le vent (Jingle Bells)",
+    "composer": "James Lord Pierpont",
+    "level": "Débutant",
+    "file": "scores/vive-le-vent.musicxml"
+  },
+  {
+    "id": "london-bridge",
+    "title": "London Bridge Is Falling Down",
+    "composer": "Traditionnel anglais",
+    "level": "Facile",
+    "file": "scores/london-bridge.musicxml"
+  },
+  {
+    "id": "old-macdonald",
+    "title": "Old MacDonald Had a Farm",
+    "composer": "Traditionnel américain",
+    "level": "Facile",
+    "file": "scores/old-macdonald.musicxml"
+  },
+  {
+    "id": "kumbaya",
+    "title": "Kumbaya",
+    "composer": "Spiritual traditionnel",
+    "level": "Facile",
+    "file": "scores/kumbaya.musicxml"
+  },
+  {
+    "id": "when-the-saints",
+    "title": "When the Saints Go Marching In",
+    "composer": "Spiritual traditionnel",
+    "level": "Facile",
+    "file": "scores/when-the-saints.musicxml"
+  },
+  {
+    "id": "joyeux-anniversaire",
+    "title": "Joyeux anniversaire",
+    "composer": "Mildred et Patty Hill",
+    "level": "Facile",
+    "file": "scores/joyeux-anniversaire.musicxml"
+  },
+  {
+    "id": "amazing-grace",
+    "title": "Amazing Grace",
+    "composer": "John Newton (paroles), air traditionnel",
+    "level": "Facile",
+    "file": "scores/amazing-grace.musicxml"
+  },
+  {
+    "id": "douce-nuit",
+    "title": "Douce nuit",
+    "composer": "Franz Xaver Gruber",
+    "level": "Facile",
+    "file": "scores/douce-nuit.musicxml"
+  },
+  {
+    "id": "il-est-ne-le-divin-enfant",
+    "title": "Il est né le divin enfant",
+    "composer": "Traditionnel",
+    "level": "Facile",
+    "file": "scores/il-est-ne-le-divin-enfant.musicxml"
+  },
+  {
+    "id": "berceuse-de-brahms",
+    "title": "Berceuse",
+    "composer": "Johannes Brahms",
+    "level": "Facile",
+    "file": "scores/berceuse-de-brahms.musicxml"
+  },
+  {
+    "id": "le-printemps-vivaldi",
+    "title": "Le Printemps (thème)",
+    "composer": "Antonio Vivaldi",
+    "level": "Facile",
+    "file": "scores/le-printemps-vivaldi.musicxml"
+  },
+  {
+    "id": "canon-de-pachelbel",
+    "title": "Canon (version facile)",
+    "composer": "Johann Pachelbel",
+    "level": "Facile",
+    "file": "scores/canon-de-pachelbel.musicxml"
+  },
+  {
+    "id": "greensleeves",
+    "title": "Greensleeves",
+    "composer": "Traditionnel anglais",
+    "level": "Intermédiaire",
+    "file": "scores/greensleeves.musicxml"
+  },
+  {
+    "id": "menuet-en-sol",
+    "title": "Menuet en sol",
+    "composer": "Christian Petzold (attribué à J.-S. Bach)",
+    "level": "Intermédiaire",
+    "file": "scores/menuet-en-sol.musicxml"
+  },
+  {
+    "id": "le-cygne",
+    "title": "Le Cygne (thème)",
+    "composer": "Camille Saint-Saëns",
+    "level": "Intermédiaire",
+    "file": "scores/le-cygne.musicxml"
+  },
+  {
+    "id": "lettre-a-elise",
+    "title": "La Lettre à Élise (début)",
+    "composer": "Ludwig van Beethoven",
+    "level": "Intermédiaire",
+    "file": "scores/lettre-a-elise.musicxml"
   }
 ]
